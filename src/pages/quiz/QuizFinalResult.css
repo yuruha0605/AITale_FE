@@ -1,0 +1,293 @@
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: "Pretendard", "Noto Sans KR", sans-serif;
+  background: #eef7ff;
+  color: #2d2d2d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.adventure-page {
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #eef7ff 0%, #dff1ff 55%, #f7fbff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.adventure-bg-cloud {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 999px;
+  filter: blur(1px);
+}
+
+.cloud-1 {
+  width: 170px;
+  height: 60px;
+  top: 80px;
+  left: 9%;
+}
+
+.cloud-2 {
+  width: 210px;
+  height: 72px;
+  top: 130px;
+  right: 8%;
+}
+
+.cloud-3 {
+  width: 130px;
+  height: 52px;
+  bottom: 140px;
+  left: 14%;
+}
+
+.adventure-ground {
+  position: absolute;
+  bottom: -70px;
+  left: -5%;
+  width: 110%;
+  height: 200px;
+  background: radial-gradient(circle at 50% 0%, #b9e7be 0%, #93d99e 60%, #7fca8c 100%);
+  border-radius: 50% 50% 0 0;
+}
+
+.adventure-card {
+  position: relative;
+  z-index: 2;
+  width: min(680px, 100%);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(215, 232, 247, 0.9);
+  box-shadow: 0 18px 40px rgba(75, 122, 173, 0.12);
+  border-radius: 32px;
+  padding: 34px 28px;
+  backdrop-filter: blur(6px);
+}
+
+.adventure-character {
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #fff3cf 0%, #ffe39a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 42px;
+  box-shadow: 0 10px 24px rgba(252, 192, 72, 0.28);
+}
+
+.adventure-step {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+  margin-bottom: 22px;
+}
+
+.adventure-step-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #d6e6f3;
+}
+
+.adventure-step-dot.active {
+  background: #7bb6ff;
+}
+
+.adventure-title {
+  margin: 0;
+  text-align: center;
+  font-size: 2rem;
+  line-height: 1.35;
+  font-weight: 800;
+  color: #2f4052;
+}
+
+.adventure-subtitle {
+  margin: 14px 0 0;
+  text-align: center;
+  font-size: 1.08rem;
+  line-height: 1.7;
+  color: #5b6b7b;
+}
+
+.adventure-speech {
+  margin: 24px auto 0;
+  max-width: 540px;
+  background: #f6fbff;
+  border: 1px solid #dcecff;
+  border-radius: 24px;
+  padding: 18px 20px;
+  font-size: 1.03rem;
+  line-height: 1.7;
+  color: #405264;
+  text-align: center;
+}
+
+.adventure-form {
+  margin-top: 26px;
+}
+
+.adventure-label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #486174;
+}
+
+.adventure-input {
+  width: 100%;
+  height: 58px;
+  border-radius: 18px;
+  border: 1px solid #d6e6f3;
+  background: #ffffff;
+  padding: 0 18px;
+  font-size: 1rem;
+  color: #2e3a46;
+  outline: none;
+  transition: 0.2s ease;
+}
+
+.adventure-input:focus {
+  border-color: #91c5ff;
+  box-shadow: 0 0 0 4px rgba(145, 197, 255, 0.2);
+}
+
+.adventure-helper {
+  margin-top: 10px;
+  font-size: 0.92rem;
+  color: #7a8a9a;
+}
+
+.adventure-button-row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 28px;
+  flex-wrap: wrap;
+}
+
+.adventure-button {
+  min-width: 180px;
+  height: 54px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #8dc6ff 0%, #6eaeff 100%);
+  color: white;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(110, 174, 255, 0.28);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+}
+
+.adventure-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(110, 174, 255, 0.34);
+}
+
+.adventure-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.adventure-button.secondary {
+  background: #edf6ff;
+  color: #51708d;
+  box-shadow: none;
+  border: 1px solid #d6e7f8;
+}
+
+.adventure-progress-text {
+  margin-top: 8px;
+  text-align: center;
+  color: #7a8a9a;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .adventure-page {
+    padding: 18px;
+  }
+
+  .adventure-card {
+    padding: 28px 18px;
+    border-radius: 24px;
+  }
+
+  .adventure-character {
+    width: 82px;
+    height: 82px;
+    font-size: 36px;
+  }
+
+  .adventure-title {
+    font-size: 1.6rem;
+  }
+
+  .adventure-subtitle,
+  .adventure-speech {
+    font-size: 0.98rem;
+  }
+
+  .adventure-button {
+    width: 100%;
+    min-width: auto;
+  }
+}
+.result-page .adventure-card {
+  text-align: center;
+}
+
+.result-level-box {
+  margin: 26px auto 0;
+  max-width: 420px;
+  background: linear-gradient(180deg, #f6fbff 0%, #edf7ff 100%);
+  border: 1px solid #d9ebfb;
+  border-radius: 28px;
+  padding: 24px 18px;
+}
+
+.result-level {
+  margin: 0;
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #2f5b84;
+}
+
+.result-score {
+  margin: 10px 0 0;
+  color: #6d8195;
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+.result-description {
+  margin-top: 20px;
+}
+
+.result-exp {
+  margin-top: 8px;
+  font-weight: bold;
+  font-size: 22px;
+  margin-bottom: 8px;
+}
