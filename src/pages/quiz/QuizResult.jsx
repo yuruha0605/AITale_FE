@@ -1,6 +1,21 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import "./QuizResult.css";
+
+const BADGE_INFO = {
+  "🟤 동화 완독 배지": { emoji: "🟤", color: "#cd7f32", label: "동화 완독 배지" },
+  "⚪ 은색 책벌레": { emoji: "⚪", color: "#aaaaaa", label: "은색 책벌레" },
+  "🟡 금색 책벌레": { emoji: "🟡", color: "#f5c518", label: "금색 책벌레" },
+  "💎 기본 플래티넘 책벌레": { emoji: "💎", color: "#5eead4", label: "기본 플래티넘 책벌레" },
+  "💎 플래티넘 책벌레": { emoji: "💎", color: "#5eead4", label: "플래티넘 책벌레" },
+};
+
+export function getBadge(correctCount, difficulty) {
+  if (correctCount <= 2) return "🟤 동화 완독 배지";
+  if (correctCount >= 3 && correctCount <= 4) return "⚪ 은색 책벌레";
+  if (correctCount === 5) return "🟡 금색 책벌레";
+  return "🟤 동화 완독 배지";
+}
 
 export default function QuizResultPage() {
   const navigate = useNavigate();
@@ -9,11 +24,14 @@ export default function QuizResultPage() {
   const results = JSON.parse(localStorage.getItem("quizResults") || "[]");
   const difficulty = localStorage.getItem("difficulty") || "중";
 
+  // ✅ 5문제까지만 계산 (누적 방지)
   const { totalScore, correctCount } = useMemo(() => {
     let total = 0;
     let correct = 0;
 
-    results.forEach((r) => {
+    const limitedResults = results.slice(0, 5);
+
+    limitedResults.forEach((r) => {
       total += r.score;
       if (r.correct) correct += 1;
     });
@@ -21,82 +39,106 @@ export default function QuizResultPage() {
     return { totalScore: total, correctCount: correct };
   }, [results]);
 
-  // ✅ 배지 로직
-  const result = useMemo(() => {
-    if (correctCount === 5 && difficulty === "상") {
-      return {
-        badge: "💎 기본 플래티넘 책벌레",
-        description: "최고 난이도에서 완벽하게 성공했어 👑",
-      };
-    }
+  const canUpgrade = correctCount === 5 && difficulty !== "상";
+  useEffect(() => {
+  // ✅ 추가 문제로 안 가는 경우만 저장
+  if (canUpgrade) return;
 
-    if (correctCount === 5) {
-      return {
-        badge: "🟡 금색 책벌레",
-        description: "추가 문제에 도전할 수 있어!",
-      };
-    }
+  const today = new Date().toISOString().slice(0, 10);
+  const history = JSON.parse(localStorage.getItem("quizHistory") || "[]");
 
-    if (correctCount >= 3) {
-      return {
-        badge: "⚪ 은색 책벌레",
-        description: "조금만 더 하면 완벽해!",
-      };
-    }
+  const existingIndex = history.findIndex((h) => h.date === today);
 
-    return {
-      badge: "🟤 동화 완독 배지",
-      description: "끝까지 해낸 것도 대단해!",
-    };
-  }, [correctCount, difficulty]);
+  if (existingIndex !== -1) {
+    history[existingIndex].score = correctCount;
+  } else {
+    history.push({
+      date: today,
+      score: correctCount,
+    });
+  }
 
-  const handleRestart = () => {
-    localStorage.removeItem("quizResults");
-    navigate("/quiz/1");
-  };
+  localStorage.setItem("quizHistory", JSON.stringify(history));
+}, [correctCount, canUpgrade]);
 
-  const handleGoReport = () => {
-    navigate("/report");
+  const badge = getBadge(correctCount, difficulty);
+  const badgeInfo = BADGE_INFO[badge] || BADGE_INFO["🟤 동화 완독 배지"];
+
+  const nextDifficulty = () => {
+    if (difficulty === "하") return "중";
+    if (difficulty === "중") return "상";
+    return "상";
   };
 
   const handleUpgrade = () => {
+    localStorage.setItem("difficulty", nextDifficulty());
+    localStorage.removeItem("extraResults");
     navigate("/quiz/extra/1");
   };
 
+  const handleSkip = () => {
+    navigate("/report");
+  };
+
+  const handleRestart = () => {
+    // ✅ 완전 초기화 (누적 방지 핵심)
+    localStorage.removeItem("quizResults");
+    localStorage.removeItem("extraResults");
+    navigate("/quiz/1");
+  };
+
+  
+
   return (
     <div className="adventure-page result-page">
-      {/* 배경 요소 */}
       <div className="adventure-bg-cloud cloud-1" />
       <div className="adventure-bg-cloud cloud-2" />
-      <div className="adventure-bg-cloud cloud-3" />
       <div className="adventure-ground" />
-
       <div className="adventure-card">
-        {/* 캐릭터 */}
         <div className="adventure-character">🏆</div>
 
-        {/* 타이틀 */}
         <h1 className="adventure-title">
           퀴즈 완료!
           <br />
           {nickname}의 결과는
         </h1>
 
-        {/* 배지 + 점수 */}
+        {/* ✅ 배지 (위로 이동 + 크게) */}
+        <div
+          className="badge-display"
+          style={{ borderColor: badgeInfo.color, marginBottom: "20px" }}
+        >
+          {/* ✅ 아이콘 */}
+          <div className="badge-icon">
+            {badgeInfo.emoji}
+          </div>
+
+          {/* ✅ 텍스트 */}
+          <div
+            className="badge-text"
+            style={{ color: badgeInfo.color }}
+          >
+            {badgeInfo.label}
+          </div>
+
+          {/* ✅ 힌트 */}
+          {canUpgrade && (
+            <p className="badge-hint">
+              ✨ 더 어려운 문제를 풀면 더 높은 배지를 받을 수 있어요!
+            </p>
+          )}
+        </div>
+
+        {/* ✅ 점수 */}
         <div className="result-level-box">
-          <p className="result-level">{result.badge}</p>
+          <p className="result-level">{Math.min(correctCount, 5)} / 5</p>
           <p className="result-exp">{totalScore} EXP</p>
         </div>
 
-        {/* 설명 */}
-        <div className="adventure-speech result-description">
-          {result.description}
-        </div>
-
-        {/* 추가 문제 */}
-        {correctCount === 5 && difficulty !== "상" && (
+        {/* 추가 문제 도전 */}
+        {canUpgrade && (
           <div className="adventure-speech" style={{ marginTop: "20px" }}>
-            <p>문제가 쉬웠나요?</p>
+            <p>문제가 쉬웠나요? 도전해서 플래티넘 배지를 받아봐요!</p>
 
             <div className="adventure-button-row">
               <button className="adventure-button" onClick={handleUpgrade}>
@@ -105,22 +147,33 @@ export default function QuizResultPage() {
 
               <button
                 className="adventure-button secondary"
-                onClick={() => {}}
+                onClick={handleSkip}
               >
-                괜찮아요
+                독해력 성장 그래프
               </button>
             </div>
           </div>
         )}
 
-        {/* 버튼 */}
-        <div className="adventure-button-row">
+        {/* 최고 난이도 클리어 */}
+        {correctCount === 5 && difficulty === "상" && (
+          <p className="badge-hint" style={{ marginTop: "8px" }}>
+            💎 최고 난이도 완벽 달성! 기본 플래티넘 배지 획득!
+          </p>
+        )}
+
+        {/* 일반 종료 */}
+        {!canUpgrade && (
+          <div className="adventure-button-row">
+            <button className="adventure-button" onClick={handleSkip}>
+              독해력 성장 그래프
+            </button>
+          </div>
+        )}
+
+        <div className="adventure-button-row" style={{ marginTop: "8px" }}>
           <button className="adventure-button secondary" onClick={handleRestart}>
             다시 풀기
-          </button>
-
-          <button className="adventure-button" onClick={handleGoReport}>
-            리포트 보기
           </button>
         </div>
       </div>

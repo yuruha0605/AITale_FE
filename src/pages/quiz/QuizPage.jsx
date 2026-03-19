@@ -8,73 +8,100 @@ export default function QuizPage() {
   const navigate = useNavigate();
   const questionIndex = Number(id) - 1;
 
-  const question = useMemo(() => quizQuestions[questionIndex], [questionIndex]);
+  const difficulty = localStorage.getItem("difficulty") || "중";
+
+  // 난이도별 5문제
+  const filteredQuestions = useMemo(() => {
+    return quizQuestions
+      .filter((q) => q.difficulty === difficulty)
+      .slice(0, 5);
+  }, [difficulty]);
+
+  const question = filteredQuestions[questionIndex];
 
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [showResult, setShowResult] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
+  const [aiExplanation, setAiExplanation] = useState("");
+  const [loadingAi, setLoadingAi] = useState(false);
 
-  if (!question) return null;
+  // questionIndex가 범위를 벗어나면 null 반환 (6/5 방지)
+  if (!question || questionIndex < 0 || questionIndex >= filteredQuestions.length) {
+    return null;
+  }
 
   const getScore = () => {
-    if (question.difficulty === "하") return 1;
-    if (question.difficulty === "중") return 2;
-    if (question.difficulty === "상") return 3;
+    if (difficulty === "하") return 1;
+    if (difficulty === "중") return 2;
+    if (difficulty === "상") return 3;
     return 1;
+  };
+
+  const fetchAiExplanation = async (isCorrect, question) => {
+    setLoadingAi(true);
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          system: "당신은 어린이를 위한 친절한 동화 선생님이에요. 퀴즈 해설을 짧고 재미있게, 동화 내용과 연결해서 2~3문장으로 설명해주세요. 이모지를 1~2개 사용하고, 쉬운 말로 설명해주세요.",
+          messages: [
+            {
+              role: "user",
+              content: `문제: ${question.question}\n정답: ${question.options[question.answer]}\n기본 해설: ${question.explanation}\n\n위 내용을 바탕으로 어린이에게 친절하게 해설해주세요.`,
+            },
+          ],
+        }),
+      });
+      const data = await response.json();
+      const text = data.content?.map((c) => c.text || "").join("") || question.explanation;
+      setAiExplanation(text);
+    } catch (e) {
+      setAiExplanation(question.explanation);
+    } finally {
+      setLoadingAi(false);
+    }
   };
 
   const handleCheck = () => {
     if (selectedIndex === null) {
-      setShowAlert(true); // 🔥 팝업 띄움
+      setShowAlert(true);
       return;
     }
+    if (showResult) return; // 이미 확인한 경우 중복 저장 방지
 
     let results = JSON.parse(localStorage.getItem("quizResults") || "[]");
-
     const correct = selectedIndex === question.answer;
 
     results.push({
       id: question.id,
       correct,
       score: correct ? getScore() : 0,
-      date: new Date().toISOString().slice(0, 10),
     });
 
     localStorage.setItem("quizResults", JSON.stringify(results));
-
     setShowResult(true);
+    fetchAiExplanation(correct, question);
   };
 
   const handleNext = () => {
     if (!showResult) {
-      setShowAlert(true); // 🔥 여기서도 팝업
+      setShowAlert(true);
       return;
     }
 
-    if (question.id < quizQuestions.length) {
-      navigate(`/quiz/${question.id + 1}`);
+    // 마지막 문제(index 4)면 결과 페이지로
+    if (questionIndex >= filteredQuestions.length - 1) {
+      navigate("/quiz/result");
+    } else {
+      navigate(`/quiz/${questionIndex + 2}`);
       setSelectedIndex(null);
       setShowResult(false);
-    } else {
-      const results = JSON.parse(localStorage.getItem("quizResults") || "[]");
-
-    const totalScore = results.reduce((sum, r) => sum + r.score, 0);
-
-    const today = new Date().toISOString().slice(0, 10);
-
-    const history = JSON.parse(localStorage.getItem("quizHistory") || "[]");
-
-    history.push({
-      date: today,
-      score: totalScore,
-    });
-
-    localStorage.setItem("quizHistory", JSON.stringify(history));
-
-    // 👉 결과 페이지 이동
-    navigate("/quiz/result");
-  }
-};
+      setAiExplanation("");
+    }
+  };
 
   return (
     <div className="adventure-page">
@@ -82,44 +109,41 @@ export default function QuizPage() {
         <div className="adventure-character">📖</div>
 
         <p className="adventure-progress-text">
-          문제 {question.id} / {quizQuestions.length}
+          문제 {questionIndex + 1} / {filteredQuestions.length}
         </p>
 
-        <div className="story-box">
-          <p>{question.story}</p>
-        </div>
+        {question.story && (
+          <div className="story-box">
+            <p>{question.story}</p>
+          </div>
+        )}
 
         <h2>{question.question}</h2>
 
         <div className="option-list">
-            {question.options.map((opt, i) => {
-                const isSelected = selectedIndex === i;
-                const isAnswer = question.answer === i;
+          {question.options.map((opt, i) => {
+            const isSelected = selectedIndex === i;
+            const isAnswer = question.answer === i;
 
-                let extraClass = "";
-
-                if (showResult) {
-                if (isAnswer) {
-                    extraClass = "correct"; // ✅ 정답은 항상 초록
-                } else if (isSelected && !isAnswer) {
-                    extraClass = "wrong"; // ❌ 내가 고른 오답은 빨강
-                }
+            let extraClass = "";
+            if (showResult) {
+              if (isAnswer) extraClass = "correct";
+              else if (isSelected) extraClass = "wrong";
             }
 
-                return (
-                <button
-                    key={i}
-                    className={`option-button ${isSelected ? "selected" : ""} ${extraClass}`}
-                    onClick={() => setSelectedIndex(i)}
-                    disabled={showResult}
-                >
-                    {opt}
-                </button>
-                );
-            })}
+            return (
+              <button
+                key={i}
+                className={`option-button ${isSelected ? "selected" : ""} ${extraClass}`}
+                onClick={() => !showResult && setSelectedIndex(i)}
+                disabled={showResult}
+              >
+                {opt}
+              </button>
+            );
+          })}
         </div>
 
-        {/* ✅ 결과 표시 */}
         {showResult && (
           <div className="quiz-result-box">
             <strong>
@@ -127,34 +151,38 @@ export default function QuizPage() {
                 ? "정답이야! 정말 잘했어 ✨"
                 : "오답입니다 😢"}
             </strong>
-            <p>
-              {question.explanation ||
-                `정답은 "${question.options[question.answer]}" 입니다.`}
-            </p>
+            <div className="ai-explanation">
+              {loadingAi ? (
+                <p className="ai-loading">🤖 해설 불러오는 중...</p>
+              ) : (
+                <p>{aiExplanation}</p>
+              )}
+            </div>
           </div>
         )}
 
         <div className="adventure-button-row">
-          <button className="adventure-button secondary" onClick={handleCheck}>
-            정답 확인
-          </button>
+          {!showResult && (
+            <button className="adventure-button secondary" onClick={handleCheck}>
+              정답 확인
+            </button>
+          )}
           <button className="adventure-button" onClick={handleNext}>
-            다음 →
+            {questionIndex >= filteredQuestions.length - 1 ? "결과 보기 →" : "다음 →"}
           </button>
         </div>
       </div>
 
-      {/* ✅ 팝업 모달 */}
       {showAlert && (
         <div className="quiz-modal">
           <div className="quiz-modal-content">
             <p>정답을 먼저 확인해줘!</p>
             <button
-                className="adventure-button"
-                onClick={() => setShowAlert(false)}
-                >
-                확인
-                </button>
+              className="adventure-button"
+              onClick={() => setShowAlert(false)}
+            >
+              확인
+            </button>
           </div>
         </div>
       )}

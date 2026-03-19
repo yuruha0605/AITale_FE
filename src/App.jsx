@@ -16,9 +16,14 @@ import StoryReadPage from "./pages/story/StoryReadPage";
 import QuizIntroPage from "./pages/quiz/QuizIntroPage";
 import QuizPage from "./pages/quiz/QuizPage";
 import QuizResult from "./pages/quiz/QuizResult";
-import ReportPage from "./pages/quiz/ReportPage";
 import QuizExtraPage from "./pages/quiz/QuizExtraPage";
 import QuizFinalResult from "./pages/quiz/QuizFinalResult";
+
+import ReportPage from "./pages/report/ReportPage";
+
+import TestIntroPage from "./pages/test/TestIntroPage";
+import TestQuizPage from "./pages/test/TestQuizPage";
+import TestResultPage from "./pages/test/TestResultPage";
 
 export default function App() {
   return (
@@ -40,9 +45,14 @@ export default function App() {
         <Route path="/quiz/intro" element={<QuizIntroPage />} />
         <Route path="/quiz/:id" element={<QuizPage />} />
         <Route path="/quiz/result" element={<QuizResult />} />
-        <Route path="/quiz/report" element={<ReportPage />} />
         <Route path="/quiz/extra/:id" element={<QuizExtraPage />} />
         <Route path="/quiz/extra/result" element={<QuizFinalResult />} />
+
+        <Route path="/report" element={<ReportPage />} />
+
+        <Route path="/test/intro" element={<TestIntroPage />} />
+        <Route path="/test/:id" element={<TestQuizPage />} />
+        <Route path="/test/result" element={<TestResultPage />} />
 
 
         <Route path="*" element={<Navigate to="/" replace />} />

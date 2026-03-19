@@ -241,6 +241,8 @@ body {
 
   .adventure-title {
     font-size: 1.6rem;
+    margin-top: 10px;     
+    text-align: center;
   }
 
   .adventure-subtitle,
@@ -292,24 +294,60 @@ body {
   margin-bottom: 8px;
 }
 
+
 .badge-display {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 14px;
+  padding: 20px;
+  border: 3px solid;
+  border-radius: 20px;
+  background: #fff8e1;
 }
 
 .badge-icon {
   font-size: 64px;
-  animation: bounce 0.7s infinite alternate;
+  line-height: 1;
+  animation: bounce 0.8s infinite alternate;
 }
 
 @keyframes bounce {
   from { transform: translateY(0); }
-  to { transform: translateY(-8px); }
+  to { transform: translateY(-6px); }
 }
 
 .badge-text {
   font-size: 20px;
   font-weight: bold;
+  text-align: center;
+}
+
+.badge-hint {
+  font-size: 14px;
+  text-align: center;
+}
+
+.result-character {
+  font-size: 80px;
+  margin-bottom: 52px;
+}
+
+.result-badge-box {
+  margin-top: 20px;
+  padding: 20px;
+  border: 3px solid;
+  border-radius: 20px;
+  background: #fff8e1;
+  text-align: center;
+}
+
+.result-badge-title {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.result-message {
+  margin-top: 8px;
+  font-size: 15px;
 }

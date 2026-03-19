@@ -1,9 +1,17 @@
 import { useNavigate } from "react-router-dom";
 import "./QuizIntroPage.css";
+import { useEffect } from "react";
 
 export default function QuizIntroPage() {
   const navigate = useNavigate();
   const nickname = localStorage.getItem("nickname") || "친구";
+
+  useEffect(() => {
+    localStorage.removeItem("quizResults");
+    localStorage.removeItem("extraResults");
+
+    localStorage.setItem("difficulty", "하"); //나중에 삭제
+  }, []);
 
   const handleStart = () => {
     localStorage.setItem("quizScore", "0");
