@@ -136,8 +136,8 @@
 /* 상단 */
 .story-top-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 12px; 
   margin-bottom: 18px;
 }
 
@@ -332,7 +332,7 @@
 /* 하단 버튼 */
 .story-bottom-row {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   margin-top: 18px;
 }

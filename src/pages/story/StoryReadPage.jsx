@@ -62,6 +62,9 @@ export default function StoryReadPage() {
 
       <div className="story-read-card">
         <div className="story-top-row">
+           <button className="story-btn story-btn-secondary" onClick={() => navigate(-1)}>
+            이전
+           </button>
           <div className="story-progress-text">동화 읽기</div>
         </div>
 
@@ -137,9 +140,6 @@ export default function StoryReadPage() {
         </div>
 
         <div className="story-bottom-row">
-          <button className="story-btn story-btn-secondary" onClick={() => navigate(-1)}>
-            이전
-          </button>
           <button className="story-btn story-btn-primary">
             다음 활동 →
           </button>
