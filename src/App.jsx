@@ -28,7 +28,7 @@ export default function App() {
           <Route path="/test/result" element={<TestResultPage />} />
           <Route path="/recommended" element={<RecommendedPage />} />
 
-          <Route path="/stories/read" element={<StoryReadPage />} />
+          <Route path="/story/:id" element={<StoryReadPage />} />
 
           <Route path="/mypage" element={<MyPage />} />
 

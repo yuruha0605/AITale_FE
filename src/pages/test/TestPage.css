@@ -214,6 +214,7 @@
 .test-section-title {
   margin: 0 0 12px;
   font-size: 18px;
+  font-weight: 600;
   color: #24404d;
 }
 
@@ -337,7 +338,7 @@
   background: linear-gradient(180deg, #8fd0ff 0%, #72c0fb 100%);
   color: white;
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 600;
   cursor: pointer;
   box-shadow: 0 12px 22px rgba(114, 192, 251, 0.28);
 }

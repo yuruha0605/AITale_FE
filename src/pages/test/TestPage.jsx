@@ -50,6 +50,7 @@ export default function TestPage() {
         setAnswers(updatedAnswers);
 
 
+
         if (currentNumber === 5 || currentNumber === 10) {
             setEncouragementData(encouragementMessages[currentNumber]);
             setShowEncouragement(true);
