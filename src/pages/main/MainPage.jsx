@@ -61,7 +61,7 @@ export default function MainPage() {
               <div className="story-book-thumb">🤖</div>
             </div>
 
-            <h3 className="story-title">AI asd추천 동화</h3>
+            <h3 className="story-title">AI 추천 동화</h3>
             <p className="story-level">나에게 맞는 이야기</p>
 
             <button
