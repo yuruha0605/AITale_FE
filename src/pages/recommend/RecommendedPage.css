@@ -1,0 +1,406 @@
+.recommend-page {
+  position: relative;
+  min-height: 100vh;
+  padding: 36px 24px 220px;
+  box-sizing: border-box;
+  overflow: hidden; /* 페이지 자체 스크롤 방지 */
+  background: linear-gradient(180deg, #dcefff 0%, #eaf6ff 52%, #f5fbff 100%);
+  font-family: "Pretendard", sans-serif;
+}
+
+/* 공통 z-index */
+.recommend-header,
+.recommend-content {
+  position: relative;
+  z-index: 3;
+}
+
+/* 상단 */
+.recommend-header {
+  text-align: center;
+  margin-bottom: 48px; /* 제목과 아래 영역 간격 더 넓힘 */
+}
+
+.recommend-title {
+  margin: 0;
+  font-size: 52px;
+  font-weight: 800;
+  color: #31496f;
+  letter-spacing: -1px;
+}
+
+.recommend-subtitle {
+  margin: 8px 0 0;
+  font-size: 20px;
+  color: #607594;
+  font-weight: 500;
+}
+
+.recommend-chip-row {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.recommend-chip {
+  border: none;
+  border-radius: 999px;
+  padding: 11px 20px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #6480a8;
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: 0 8px 18px rgba(126, 161, 211, 0.12);
+  cursor: pointer;
+}
+
+.recommend-chip.active {
+  background: linear-gradient(135deg, #7bb4ff 0%, #5f98f7 100%);
+  color: #fff;
+}
+
+/* 컨텐츠 전체 박스 */
+.recommend-content {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+/* 추천 목록을 감싸는 스크롤 박스 */
+.recommend-list-box {
+  background: rgba(255, 255, 255, 0.35);
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  border-radius: 30px;
+  padding: 26px;
+  box-shadow: 0 16px 32px rgba(117, 154, 204, 0.12);
+  backdrop-filter: blur(8px);
+
+  max-height: 560px;   /* 이 박스 안에서만 스크롤 */
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* 스크롤바 꾸미기 */
+.recommend-list-box::-webkit-scrollbar {
+  width: 10px;
+}
+
+.recommend-list-box::-webkit-scrollbar-thumb {
+  background: #b8d5ff;
+  border-radius: 999px;
+}
+
+.recommend-list-box::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* 3개씩 고정 */
+.book-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px; /* 카드 사이 간격 조금 축소 */
+}
+
+/* 카드 */
+.book-card {
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid #cfe2ff;
+  border-radius: 24px;
+  box-shadow: 0 12px 24px rgba(117, 154, 204, 0.14);
+  padding: 18px 18px 16px;
+  min-height: 285px; /* 기존보다 조금 줄임 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.book-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 28px rgba(117, 154, 204, 0.18);
+}
+
+.book-image {
+  width: 100%;
+  height: 130px; /* 이미지 높이도 살짝 축소 */
+  border-radius: 18px;
+  background: linear-gradient(180deg, #fff1b8 0%, #ffe39a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.book-emoji {
+  font-size: 46px;
+}
+
+.book-info {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.book-title {
+  margin: 0;
+  font-size: 24px; /* 제목 조금 축소 */
+  font-weight: 800;
+  color: #3a4f73;
+  line-height: 1.3;
+}
+
+.book-desc {
+  margin: 10px 0 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #7184a0;
+  min-height: 48px;
+}
+
+.book-meta {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.meta-pill {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef6ff;
+  color: #5f80aa;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.meta-text {
+  font-size: 14px;
+  color: #6f84a4;
+  font-weight: 700;
+}
+
+.read-button {
+  margin-top: auto;
+  width: 104px;
+  height: 44px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #81baff 0%, #679ef7 100%);
+  color: #fff;
+  font-size: 17px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(103, 158, 247, 0.24);
+}
+
+/* 배경 - 해 */
+.sun {
+  position: absolute;
+  top: 48px;
+  right: 120px;
+  width: 118px;
+  height: 118px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff3af 0%, #ffe47a 70%, #ffd85d 100%);
+  box-shadow: 0 0 46px rgba(255, 220, 101, 0.38);
+  z-index: 1;
+}
+
+/* 배경 - 구름 */
+.cloud {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 999px;
+  z-index: 1;
+}
+
+.cloud::before,
+.cloud::after {
+  content: "";
+  position: absolute;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 50%;
+}
+
+.cloud-1 {
+  top: 42px;
+  left: 68px;
+  width: 92px;
+  height: 42px;
+}
+
+.cloud-1::before {
+  width: 42px;
+  height: 42px;
+  top: -16px;
+  left: 8px;
+}
+
+.cloud-1::after {
+  width: 50px;
+  height: 50px;
+  top: -22px;
+  right: 10px;
+}
+
+.cloud-2 {
+  top: 120px;
+  left: 170px;
+  width: 104px;
+  height: 46px;
+}
+
+.cloud-2::before {
+  width: 44px;
+  height: 44px;
+  top: -16px;
+  left: 12px;
+}
+
+.cloud-2::after {
+  width: 54px;
+  height: 54px;
+  top: -22px;
+  right: 12px;
+}
+
+.cloud-3 {
+  top: 64px;
+  right: 78px;
+  width: 100px;
+  height: 44px;
+}
+
+.cloud-3::before {
+  width: 42px;
+  height: 42px;
+  top: -14px;
+  left: 10px;
+}
+
+.cloud-3::after {
+  width: 52px;
+  height: 52px;
+  top: -20px;
+  right: 10px;
+}
+
+/* 하단 언덕 */
+.hill {
+  position: absolute;
+  left: 50%;
+  bottom: -170px;
+  transform: translateX(-50%);
+  width: 125%;
+  height: 260px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #9cdda0 0%, #7ccb82 100%);
+  z-index: 1;
+}
+
+/* 꽃 */
+.flower {
+  position: absolute;
+  z-index: 2;
+}
+
+.flower-head {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, #f3d868 0 36%, transparent 37%),
+    radial-gradient(circle, #ffd6ea 0 65%, #ffc5e0 66% 100%);
+}
+
+.flower-head.small {
+  width: 62px;
+  height: 62px;
+}
+
+.flower-stem {
+  width: 6px;
+  height: 82px;
+  margin: -2px auto 0;
+  background: #4f9d58;
+  border-radius: 999px;
+}
+
+.flower-left-2 {
+  left: 108px;
+  bottom: 30px;
+}
+
+/* 반응형 */
+@media (max-width: 1024px) {
+  .recommend-title {
+    font-size: 44px;
+  }
+
+  .recommend-subtitle {
+    font-size: 18px;
+  }
+
+  .recommend-list-box {
+    max-height: 520px;
+    padding: 22px;
+  }
+
+  .book-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .recommend-page {
+    padding: 28px 16px 160px;
+  }
+
+  .recommend-header {
+    margin-bottom: 34px;
+  }
+
+  .recommend-title {
+    font-size: 34px;
+  }
+
+  .recommend-subtitle {
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .recommend-list-box {
+    max-height: 500px;
+    padding: 18px;
+    border-radius: 24px;
+  }
+
+  .book-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .book-card {
+    min-height: 270px;
+  }
+
+  .book-title {
+    font-size: 22px;
+  }
+
+  .book-desc {
+    font-size: 14px;
+  }
+
+  .sun,
+  .cloud-3 {
+    display: none;
+  }
+}

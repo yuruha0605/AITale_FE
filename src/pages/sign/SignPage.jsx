@@ -1,6 +1,7 @@
+//회원 가입 후 나타나는 로그인 페이지 입니다.
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./LoginPage.css";
+import "./SignPage.css";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -20,21 +21,11 @@ export default function LoginPage() {
 
   const handleLogin = () => {
     console.log("로그인 시도:", form);
+
+    navigate("/test/intro");
   };
 
-  const handleSignup = () => {
-    console.log("회원가입 페이지로 이동");
-  };
-
-  //간편 로그인 함수 
-  const handleSocialLogin = (provider) => {
-  console.log(provider + " 간편 로그인 시도");
-
-  // 백엔드 OAuth 로그인 주소로 이동 ?? 
-  window.location.href = `http://localhost:8080/oauth2/authorization/${provider}`;
-  };
-
-  return (
+   return (
     <div className="login-page">
       <div className="login-illustration">
         <div className="login-sun"></div>
@@ -88,43 +79,7 @@ export default function LoginPage() {
           <button className="login-button" onClick={handleLogin}>
             로그인
           </button>
-
-          <button className="signup-button" onClick={() => navigate("/join")}>
-            회원가입
-          </button>
-          <div className="login-divider social-divider">
-            <span>간편 로그인</span>
           </div>
-
-          <div className="social-icon-group">
-            <button
-              type="button"
-              className="social-circle google"
-              onClick={() => handleSocialLogin("google")}
-              aria-label="구글 로그인"
-            >
-              G
-            </button>
-
-            <button
-              type="button"
-              className="social-circle naver"
-              onClick={() => handleSocialLogin("naver")}
-              aria-label="네이버 로그인"
-            >
-              N
-            </button>
-
-            <button
-              type="button"
-              className="social-circle kakao"
-              onClick={() => handleSocialLogin("kakao")}
-              aria-label="카카오 로그인"
-            >
-              K
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );
