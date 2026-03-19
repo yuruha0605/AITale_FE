@@ -1,12 +1,12 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  BarChart,
   Bar,
+  BarChart,
+  CartesianGrid,
+  Tooltip,
   XAxis,
   YAxis,
-  Tooltip,
-  CartesianGrid,
 } from "recharts";
 
 import "./ReportPage.css";
@@ -114,7 +114,7 @@ export default function ReportPage() {
         <div className="adventure-button-row">
           <button
             className="adventure-button secondary"
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/main")}
           >
             홈으로
           </button>

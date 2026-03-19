@@ -57,7 +57,7 @@ export default function TestIntroPage() {
         <div className="test-intro-button-group">
           <button
             className="test-intro-later-btn"
-            onClick={() => navigate("/home")}
+            onClick={() => navigate("/main")}
           >
             나중에 할래요
           </button>

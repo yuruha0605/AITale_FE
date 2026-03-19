@@ -123,7 +123,7 @@ export default function JoinPage() {
         <div className="join-flower flower-right" />
 
         <div className="join-hero-card">
-          <span className="join-badge">Fairy Join</span>
+          <span className="join-badge">회원 가입</span>
           <h1>함께 이야기를 시작해요</h1>
           <p>
             너만의 관심사와 읽고 싶은 책을 골라

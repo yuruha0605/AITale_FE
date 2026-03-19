@@ -11,7 +11,7 @@ export default function Header() {
         <button
           className="simple-logo"
           type="button"
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/main")}
           aria-label="메인페이지로 이동" //일단 홈으로 이동하게 함
         >
           <span className="simple-logo-badge">📖</span>

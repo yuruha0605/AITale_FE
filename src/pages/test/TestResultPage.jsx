@@ -1,7 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import "./TestPage.css";
-import "./TestResultPage.css";
 
 export default function TestResultPage() {
   const navigate = useNavigate();
@@ -114,8 +113,8 @@ export default function TestResultPage() {
             추천 동화 보러가기
           </button>
 
-          <button className="test-next-btn" onClick={() => navigate("/home")}>
-            홈으로 가기
+          <button className="test-next-btn" onClick={() => navigate("/mypage")}>
+            마이페이지로 이동
           </button>
         </div>
       </div>
