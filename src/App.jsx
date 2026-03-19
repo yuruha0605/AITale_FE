@@ -2,6 +2,8 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import HomePage from "./pages/home/HomePage";
 import LoginPage from "./pages/login/LoginPage";
 
+import MainPage from "./pages/main/MainPage";
+
 import AdventureBirthPage from "./pages/adventure/AdventureBirthPage";
 import AdventureIntroPage from "./pages/adventure/AdventureIntroPage";
 import AdventureNicknamePage from "./pages/adventure/AdventureNicknamePage";
@@ -31,6 +33,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
+
+        <Route path="/main" element={<MainPage />} />
 
         <Route path="/adventure/intro" element={<AdventureIntroPage />} />
         <Route path="/adventure/nickname" element={<AdventureNicknamePage />} />
