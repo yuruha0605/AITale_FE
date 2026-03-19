@@ -1,6 +1,7 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import "./TestPage.css";
+import "./TestResultPage.css";
 
 export default function TestResultPage() {
   const navigate = useNavigate();
@@ -34,6 +35,22 @@ export default function TestResultPage() {
       title: "깊이 있는 독해와 추론이 가능한 단계예요",
       desc: "조금 더 긴 글과 의미 해석, 중심 생각 파악이 필요한 문제도 충분히 도전할 수 있어요.",
     };
+  }, [resultData.totalScore]);
+
+  useEffect(() => {
+    const score = resultData.totalScore;
+
+    if (score <= 5) {
+      localStorage.setItem("difficulty", "하");
+      return;
+    }
+
+    if (score <= 12) {
+      localStorage.setItem("difficulty", "중");
+      return;
+    }
+
+    localStorage.setItem("difficulty", "상");
   }, [resultData.totalScore]);
 
   return (
@@ -95,6 +112,10 @@ export default function TestResultPage() {
             onClick={() => navigate("/recommended")}
           >
             추천 동화 보러가기
+          </button>
+
+          <button className="test-next-btn" onClick={() => navigate("/home")}>
+            홈으로 가기
           </button>
         </div>
       </div>
