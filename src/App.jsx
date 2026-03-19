@@ -8,6 +8,7 @@ import TestIntroPage from "./pages/test/TestIntroPage";
 import TestPage from "./pages/test/TestPage";
 import TestResultPage from "./pages/test/TestResultPage";
 
+import MyPage from "./pages/mypage/MyPage";
 import StoryReadPage from "./pages/story/StoryReadPage";
 
 export default function App() {
@@ -24,6 +25,8 @@ export default function App() {
         <Route path="/recommended" element={<RecommendedPage />} />
       
         <Route path="/stories/read" element={<StoryReadPage />} />
+
+        <Route path="/mypage" element={<MyPage />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
