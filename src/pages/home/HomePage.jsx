@@ -14,7 +14,7 @@ export default function HomePage() {
       <div className="sun"></div>
 
       
-      <div className="hill hill-front"></div>
+      <div className="hill"></div>
 
       <div className="flower flower1"></div>
       <div className="flower flower2"></div>

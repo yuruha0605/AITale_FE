@@ -199,16 +199,14 @@ body {
 /* 언덕 */
 .hill {
   position: absolute;
-  left: 0;
-  width: 100%;
-  border-radius: 50% 50% 0 0;
-}
-
-.hill-front {
-  bottom: 0;
-  height: 260px;
-  background: #8fd694;
-  z-index: 4;
+  left: 50%;
+  bottom: -170px;
+  transform: translateX(-50%);
+  width: 130%;
+  height: 320px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #9cdda0 0%, #7ccb82 100%);
+  z-index: 1;
 }
 
 /* 별빛/반짝이 */
