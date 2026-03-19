@@ -10,9 +10,7 @@ import TestIntroPage from "./pages/test/TestIntroPage";
 import TestPage from "./pages/test/TestPage";
 import TestResultPage from "./pages/test/TestResultPage";
 
-<<<<<<< HEAD
 import MyPage from "./pages/mypage/MyPage";
-=======
 import MainPage from "./pages/main/MainPage";
 
 import AdventureBirthPage from "./pages/adventure/AdventureBirthPage";
@@ -24,7 +22,6 @@ import AdventureTestIntroPage from "./pages/adventure/AdventureTestIntroPage";
 
 import StoryRecommendPage from "./pages/story/StoryRecommendPage";
 
->>>>>>> origin/feature/hyebin
 import StoryReadPage from "./pages/story/StoryReadPage";
 
 import QuizIntroPage from "./pages/quiz/QuizIntroPage";
@@ -45,7 +42,6 @@ export default function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
 
-<<<<<<< HEAD
         <Route element={<MainLayout />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/join" element={<JoinPage />} />
@@ -61,7 +57,6 @@ export default function App() {
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
-=======
         <Route path="/main" element={<MainPage />} />
 
         <Route path="/adventure/intro" element={<AdventureIntroPage />} />
@@ -88,7 +83,6 @@ export default function App() {
 
 
         <Route path="*" element={<Navigate to="/" replace />} />
->>>>>>> origin/feature/hyebin
       </Routes>
     </BrowserRouter>
   );
