@@ -29,6 +29,24 @@
   margin-bottom: 12px;
 }
 
+.footer-team {
+  margin: 14px 0;
+}
+
+/* 팀 이름 */
+.team-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+/* 조원 */
+.team-members {
+  font-size: 12px;
+  color: #7b8794;
+}
+
 /* 저작권 */
 .footer-copy {
   font-size: 12px;

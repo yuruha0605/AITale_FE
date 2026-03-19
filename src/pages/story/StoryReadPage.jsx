@@ -63,12 +63,6 @@ export default function StoryReadPage() {
       <div className="story-read-card">
         <div className="story-top-row">
           <div className="story-progress-text">동화 읽기</div>
-          <div className="story-progress-wrap">
-            <div className="story-progress-bar">
-              <div className="story-progress-fill" />
-            </div>
-            <span className="story-progress-count">1 / 1</span>
-          </div>
         </div>
 
         <div className="story-main-layout">
