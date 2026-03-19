@@ -1,4 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import MainLayout from "./components/layout/MainLayout";
+
 import HomePage from "./pages/home/HomePage";
 import JoinPage from "./pages/join/JoinPage";
 import LoginPage from "./pages/login/LoginPage";
@@ -16,19 +18,22 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/join" element={<JoinPage />} />
-        <Route path="/sign" element={<SignPage />} />
-        <Route path="/test/intro" element={<TestIntroPage />} />
-        <Route path="/test/start" element={<TestPage />} />
-        <Route path="/test/result" element={<TestResultPage />} />
-        <Route path="/recommended" element={<RecommendedPage />} />
-      
-        <Route path="/stories/read" element={<StoryReadPage />} />
 
-        <Route path="/mypage" element={<MyPage />} />
+        <Route element={<MainLayout />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/join" element={<JoinPage />} />
+          <Route path="/sign" element={<SignPage />} />
+          <Route path="/test/intro" element={<TestIntroPage />} />
+          <Route path="/test/start" element={<TestPage />} />
+          <Route path="/test/result" element={<TestResultPage />} />
+          <Route path="/recommended" element={<RecommendedPage />} />
 
-        <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/stories/read" element={<StoryReadPage />} />
+
+          <Route path="/mypage" element={<MyPage />} />
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );
