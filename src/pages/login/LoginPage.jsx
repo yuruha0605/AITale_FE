@@ -42,8 +42,7 @@ export default function LoginPage() {
         <div className="login-cloud cloud-a"></div>
         <div className="login-cloud cloud-b"></div>
         <div className="login-cloud cloud-c"></div>
-
-        <div className="login-hill hill-back"></div>
+        
         <div className="login-hill hill-front"></div>
 
         <div className="login-flower flower-a"></div>

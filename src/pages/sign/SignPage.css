@@ -37,9 +37,7 @@ body {
   background: linear-gradient(
     to bottom,
     #dff4ff 0%,
-    #eaf8ff 30%,
-    #eefbe9 31%,
-    #eefbe9 100%
+    #eaf8ff 100%
   );
 }
 
@@ -49,13 +47,6 @@ body {
   left: 0;
   width: 100%;
   border-radius: 50% 50% 0 0;
-}
-
-.hill-back {
-  bottom: 120px;
-  height: 220px;
-  background: #c8ecbe;
-  z-index: 1;
 }
 
 .hill-front {
