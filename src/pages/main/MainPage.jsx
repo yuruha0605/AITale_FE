@@ -66,7 +66,7 @@ export default function MainPage() {
 
             <button
               className="story-read-button"
-              onClick={() => navigate("/stories")}
+              onClick={() => navigate("/recommended")}
             >
               보러가기
             </button>
