@@ -258,6 +258,7 @@
 }
 
 .story-btn-primary {
+  margin-left: auto;
   background: linear-gradient(135deg, #8ebcff 0%, #6ea7ff 100%);
   color: #ffffff;
   box-shadow: 0 8px 18px rgba(110, 167, 255, 0.28);
