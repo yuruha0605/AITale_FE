@@ -13,8 +13,6 @@ import TestResultPage from "./pages/test/TestResultPage";
 import MainPage from "./pages/main/MainPage";
 import MyPage from "./pages/mypage/MyPage";
 
-
-
 import StoryReadPage from "./pages/story/StoryReadPage";
 
 import QuizExtraPage from "./pages/quiz/QuizExtraPage";
@@ -45,7 +43,10 @@ export default function App() {
 
           <Route path="/mypage" element={<MyPage />} />
 
+          <Route path="*" element={<Navigate to="/" replace />} />
+  
           <Route path="/main" element={<MainPage />} />
+
 
           <Route path="/quiz/intro" element={<QuizIntroPage />} />
           <Route path="/quiz/:id" element={<QuizPage />} />
@@ -57,7 +58,6 @@ export default function App() {
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
-
       </Routes>
     </BrowserRouter>
   );
