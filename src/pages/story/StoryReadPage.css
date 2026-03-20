@@ -10,92 +10,6 @@
   box-sizing: border-box;
 }
 
-/* 배경 해 */
-.story-bg-sun {
-  position: absolute;
-  top: 58px;
-  right: 90px;
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  background: radial-gradient(circle, #fff6a8 0%, #ffe27a 70%, #ffd859 100%);
-  box-shadow: 0 0 30px rgba(255, 220, 100, 0.55);
-  z-index: 0;
-}
-
-/* 배경 구름 */
-.story-bg-cloud {
-  position: absolute;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 999px;
-  z-index: 0;
-}
-
-.story-bg-cloud::before,
-.story-bg-cloud::after {
-  content: "";
-  position: absolute;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 50%;
-}
-
-.cloud-1 {
-  top: 66px;
-  left: 64px;
-  width: 60px;
-  height: 24px;
-}
-.cloud-1::before {
-  width: 24px;
-  height: 24px;
-  left: 8px;
-  top: -10px;
-}
-.cloud-1::after {
-  width: 28px;
-  height: 28px;
-  right: 6px;
-  top: -12px;
-}
-
-.cloud-2 {
-  top: 120px;
-  right: 160px;
-  width: 72px;
-  height: 28px;
-}
-.cloud-2::before {
-  width: 26px;
-  height: 26px;
-  left: 8px;
-  top: -11px;
-}
-.cloud-2::after {
-  width: 32px;
-  height: 32px;
-  right: 10px;
-  top: -14px;
-}
-
-.cloud-3 {
-  top: 140px;
-  left: 110px;
-  width: 48px;
-  height: 20px;
-}
-.cloud-3::before {
-  width: 18px;
-  height: 18px;
-  left: 6px;
-  top: -8px;
-}
-.cloud-3::after {
-  width: 22px;
-  height: 22px;
-  right: 6px;
-  top: -10px;
-}
-
 /* 배경 언덕 */
 .story-ground {
   position: absolute;
@@ -106,19 +20,6 @@
   background: #97db95;
   border-radius: 50% 50% 0 0 / 100% 100% 0 0;
   z-index: 0;
-}
-
-.flower-left-1 {
-  left: 10px;
-}
-.flower-left-2 {
-  left: 36px;
-}
-.flower-right-1 {
-  right: 40px;
-}
-.flower-right-2 {
-  right: 12px;
 }
 
 /* 카드 */
@@ -136,15 +37,15 @@
 /* 상단 */
 .story-top-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 12px;
   margin-bottom: 18px;
 }
 
 .story-progress-text {
   font-size: 13px;
   color: #7f93a8;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 /* 레이아웃 */

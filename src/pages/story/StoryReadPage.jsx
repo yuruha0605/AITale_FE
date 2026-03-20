@@ -50,18 +50,12 @@ export default function StoryReadPage() {
   return (
     <div className="story-read-page">
       {/* 배경 */}
-      <div className="story-bg-sun" />
-      <div className="story-bg-cloud cloud-1" />
-      <div className="story-bg-cloud cloud-2" />
-      <div className="story-bg-cloud cloud-3" />
-      <div className="story-ground" />
-      <div className="story-flower flower-left-1" />
-      <div className="story-flower flower-left-2" />
-      <div className="story-flower flower-right-1" />
-      <div className="story-flower flower-right-2" />
-
+     <div className="story-ground" />
+     
       <div className="story-read-card">
         <div className="story-top-row">
+           <button className="story-btn story-btn-secondary" onClick={() => navigate(-1)}>
+            이전 </button>
           <div className="story-progress-text">동화 읽기</div>
         </div>
 
@@ -137,11 +131,8 @@ export default function StoryReadPage() {
         </div>
 
         <div className="story-bottom-row">
-          <button className="story-btn story-btn-secondary" onClick={() => navigate(-1)}>
-            이전
-          </button>
-          <button className="story-btn story-btn-primary">
-            다음 활동 →
+          <button className="story-btn story-btn-primary" onClick={() => navigate("/quiz/intro")} >
+            퀴즈 풀기 →
           </button>
         </div>
       </div>
