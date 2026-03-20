@@ -115,7 +115,7 @@ export default function JoinPage() {
   return (
     <div className="join-page">
       <section className="join-hero">
-        <div className="join-hill hill-back" />
+
         <div className="join-hill hill-front" />
 
         <div className="join-flower flower-left" />
@@ -126,7 +126,7 @@ export default function JoinPage() {
           <span className="join-badge">회원 가입</span>
           <h1>함께 이야기를 시작해요</h1>
           <p>
-            너만의 관심사와 읽고 싶은 책을 골라
+            나만의 관심사와 읽고 싶은 책을 골라
             <br />
             특별한 동화 세상을 만들어 볼까요?
           </p>
@@ -147,7 +147,7 @@ export default function JoinPage() {
             <div className="step-section">
               <h2>기본 정보를 알려주세요</h2>
               <p className="step-description">
-                아이디, 비밀번호, 생년월일을 입력해 주세요.
+                아이디, 비밀번호, 생년월일을 입력해주세요
               </p>
 
               <div className="input-group">
@@ -189,10 +189,10 @@ export default function JoinPage() {
             <div className="step-section">
               <h2>좋아하는 관심사를 골라주세요</h2>
               <p className="step-description">
-                총 3개까지 선택할 수 있어요.
+                총 3개까지 선택할 수 있어요
                 <br />
                 <span className="highlight-text">
-                  현재 {selectedInterests.length}/3 선택
+                  {selectedInterests.length}/3 선택
                 </span>
               </p>
 
@@ -226,7 +226,7 @@ export default function JoinPage() {
             <div className="step-section">
               <h2>읽어보고 싶은 책을 골라주세요</h2>
               <p className="step-description">
-                가장 먼저 만나보고 싶은 책 1권을 선택해 주세요.
+                가장 먼저 만나보고 싶은 책 한 권을 선택해주세요
               </p>
 
               <div className="book-list">

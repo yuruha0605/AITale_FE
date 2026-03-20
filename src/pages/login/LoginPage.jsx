@@ -18,13 +18,13 @@ export default function LoginPage() {
     }));
   };
 
-  const handleLogin = () => {
+  /*const handleLogin = () => {
     console.log("로그인 시도:", form);
   };
 
   const handleSignup = () => {
     console.log("회원가입 페이지로 이동");
-  };
+  };*/
 
   //간편 로그인 함수 
   const handleSocialLogin = (provider) => {
@@ -50,7 +50,7 @@ export default function LoginPage() {
         <div className="login-flower flower-c"></div>
 
         <div className="illustration-text">
-          <span className="illustration-badge">Fairy Login</span>
+          <span className="illustration-badge">로그인</span>
           <h1>만나서 반가워요</h1>
           <p>
             포근한 이야기 속으로
@@ -62,7 +62,7 @@ export default function LoginPage() {
 
       <div className="login-panel">
         <div className="login-card">
-          <p>아이디와 비밀번호를 입력해 주세요.</p>
+          <p>아이디와 비밀번호를 입력해 주세요</p>
 
           <div className="input-group">
             <input
@@ -84,7 +84,7 @@ export default function LoginPage() {
             />
           </div>
 
-          <button className="login-button" onClick={handleLogin}>
+          <button className="login-button" onClick={() => navigate("/main")}>
             로그인
           </button>
 
