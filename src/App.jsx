@@ -45,20 +45,19 @@ export default function App() {
 
           <Route path="/mypage" element={<MyPage />} />
 
+          <Route path="/main" element={<MainPage />} />
+
+          <Route path="/quiz/intro" element={<QuizIntroPage />} />
+          <Route path="/quiz/:id" element={<QuizPage />} />
+          <Route path="/quiz/result" element={<QuizResult />} />
+          <Route path="/quiz/extra/:id" element={<QuizExtraPage />} />
+          <Route path="/quiz/extra/result" element={<QuizFinalResult />} />
+
+          <Route path="/report" element={<ReportPage />} />
+
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
-        <Route path="/main" element={<MainPage />} />
 
-
-        <Route path="/quiz/intro" element={<QuizIntroPage />} />
-        <Route path="/quiz/:id" element={<QuizPage />} />
-        <Route path="/quiz/result" element={<QuizResult />} />
-        <Route path="/quiz/extra/:id" element={<QuizExtraPage />} />
-        <Route path="/quiz/extra/result" element={<QuizFinalResult />} />
-
-        <Route path="/report" element={<ReportPage />} />
-
-        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
