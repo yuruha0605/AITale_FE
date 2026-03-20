@@ -22,6 +22,7 @@ import QuizPage from "./pages/quiz/QuizPage";
 import QuizResult from "./pages/quiz/QuizResult";
 
 import ReportPage from "./pages/report/ReportPage";
+import MyReport from "./pages/myreport/MyReport";
 
 
 export default function App() {
@@ -55,6 +56,8 @@ export default function App() {
           <Route path="/quiz/extra/result" element={<QuizFinalResult />} />
 
           <Route path="/report" element={<ReportPage />} />
+
+          <Route path="/myreport" element={<MyReport />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
