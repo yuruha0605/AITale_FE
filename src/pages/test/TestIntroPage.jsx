@@ -14,8 +14,7 @@ export default function TestIntroPage() {
       <div className="test-bg-cloud cloud1"></div>
       <div className="test-bg-cloud cloud2"></div>
       <div className="test-bg-cloud cloud3"></div>
-      <div className="test-bg-hill hill1"></div>
-      <div className="test-bg-hill hill2"></div>
+      <div className="test-bg-hill"></div>
 
       <div className="test-intro-card">
         <div className="test-intro-badge">Reading Level Test</div>
