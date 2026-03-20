@@ -15,7 +15,7 @@ export default function TestResultPage() {
 
     if (score <= 5) {
       return {
-        level: "쉬움",
+        level: "초급",
         title: "천천히 읽으며 핵심을 찾는 단계예요",
         desc: "짧고 명확한 문장의 이야기부터 시작하면 좋아요. 이후 점점 문장 길이와 추론이 필요한 문제로 확장해 나가면 돼요.",
       };
@@ -23,14 +23,14 @@ export default function TestResultPage() {
 
     if (score <= 12) {
       return {
-        level: "보통",
+        level: "중급",
         title: "기본 이해력과 핵심 파악 능력이 잘 잡혀 있어요",
         desc: "중간 길이의 지문과 간단한 추론 문제가 잘 맞는 단계예요. 다양한 주제의 글을 읽으며 독해 폭을 넓혀보세요.",
       };
     }
 
     return {
-      level: "어려움",
+      level: "상급",
       title: "깊이 있는 독해와 추론이 가능한 단계예요",
       desc: "조금 더 긴 글과 의미 해석, 중심 생각 파악이 필요한 문제도 충분히 도전할 수 있어요.",
     };

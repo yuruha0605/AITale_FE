@@ -3,44 +3,43 @@ import { useNavigate } from "react-router-dom";
 import "./JoinPage.css";
 
 const interestOptions = [
-  "동물 이야기",
-  "공주님",
+  "동물",
+  "공주",
   "마법",
   "우주",
   "공룡",
   "바다",
   "요리",
-  "그림 그리기",
+  "그림",
   "음악",
-  "숲속 모험",
-  "친구 이야기",
-  "탈것",
+  "자연",
+  "친구",
+  "자동차",
   "로봇",
   "계절",
-  "별과 달",
 ];
 
 const bookOptions = [
   {
     id: 1,
-    title: "강아지똥",
-    genre: "따뜻한 성장 동화",
-    emoji: "🐶",
-    description: "작고 소중한 존재의 의미를 알려주는 인기 동화",
+    title: "백설공주",
+    genre: "공주 / 마법",
+    emoji: "👸",
+    description: "질투 많은 왕비를 피해 숲으로 도망친 백설공주가 일곱 난쟁이와 함께 지내며 겪는 모험 이야기",
   },
   {
     id: 2,
-    title: "알사탕",
-    genre: "감성 판타지 동화",
-    emoji: "🍬",
-    description: "마음을 듣게 되는 특별한 사탕 이야기",
+    title: "토끼와 거북이",
+    genre: "우화 / 교훈",
+    emoji: "🐢",
+    description: "빠른 토끼와 느린 거북이의 경주 이야기",
   },
   {
     id: 3,
-    title: "이상한 과자 가게 전천당",
-    genre: "상상력 가득 판타지",
-    emoji: "🏪",
-    description: "신비한 과자와 함께 펼쳐지는 흥미진진한 이야기",
+    title: "피노키오",
+    genre: "모험 / 성장",
+    emoji: "🤥",
+    description: "거짓말을 하면 코가 길어지는 피노키오가 진짜 사람이 되기 위해 겪는 성장 이야기",
   },
 ];
 
