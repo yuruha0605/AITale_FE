@@ -130,13 +130,14 @@
 /* 언덕 */
 .hill {
   position: absolute;
-  left: -5%;
-  width: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140%;
   border-radius: 50% 50% 0 0;
 }
 
 .hill-front {
-  bottom: 0;
+  bottom: -70px;
   height: 230px;
   background: linear-gradient(180deg, #9be29c 0%, #7fd388 100%);
   box-shadow: inset 0 18px 30px rgba(255, 255, 255, 0.22);
