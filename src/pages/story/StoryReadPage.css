@@ -10,18 +10,6 @@
   box-sizing: border-box;
 }
 
-/* 배경 언덕 */
-.story-ground {
-  position: absolute;
-  left: -5%;
-  bottom: -70px;
-  width: 110%;
-  height: 180px;
-  background: #97db95;
-  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-  z-index: 0;
-}
-
 /* 카드 */
 .story-read-card {
   position: relative;

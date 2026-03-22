@@ -23,7 +23,7 @@ export default function HomePage() {
 
       <div className="home-overlay">
         <div className="welcome-card">
-          <span className="badge">Fairy Start</span>
+          <span className="badge">아이(AI) 동화</span>
           <h1>환영합니다</h1>
           <p>
             오늘도 포근하고 반짝이는 하루를
