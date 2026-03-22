@@ -88,10 +88,10 @@ export default function MainPage() {
               </svg>
 
               <div className="hero-cloud-content">
-                <div className="hero-feature-icons">📖</div>
+                <div className="hero-feature-icons"></div>
 
                 <h3>
-                  우리 아이에게 딱 맞는 이야기
+                   우리 아이에게 딱 맞는 이야기
                 </h3>
 
                 <p>
