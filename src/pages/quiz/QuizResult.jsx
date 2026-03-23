@@ -120,7 +120,7 @@ export default function QuizResultPage() {
       exp: totalScore,
       badge: badge.title,
     });
-    navigate("/report");
+    navigate("/myreport");
   };
 
   const handleRestart = () => {
@@ -190,7 +190,7 @@ export default function QuizResultPage() {
                   추가 문제 도전하기 →
                 </button>
                 <button className="result-button secondary" onClick={handleSkip}>
-                  여기까지 하고 레포트 보기
+                  독해력 성장 그래프 확인
                 </button>
               </div>
             </div>
@@ -202,12 +202,12 @@ export default function QuizResultPage() {
                   <strong> 기본 플래티넘 책벌레 배지</strong>를 받았어요.
                 </p>
               ) : (
-                <p>이번 결과를 바탕으로 학습 레포트를 확인해보세요.</p>
+                <p>이번 결과를 바탕으로 독해력 성장 그래프를 확인해보세요.</p>
               )}
 
               <div className="result-button-row">
                 <button className="result-button primary" onClick={handleSkip}>
-                  학습 레포트 보기 →
+                  독해력 성장 그래프 확인 →
                 </button>
               </div>
             </div>
