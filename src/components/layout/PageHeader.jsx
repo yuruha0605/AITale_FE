@@ -56,7 +56,7 @@ export default function PageHeader() {
             <button type="button" onClick={() => handleMove("/quiz/intro")}>
               퀴즈 풀기
             </button>
-            <button type="button" onClick={() => handleMove("/mypage")}>
+            <button type="button" onClick={() => handleMove("/myreport")}>
               마이페이지
             </button>
           </div>
