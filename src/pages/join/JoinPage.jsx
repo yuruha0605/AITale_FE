@@ -3,20 +3,21 @@ import { useNavigate } from "react-router-dom";
 import "./JoinPage.css";
 
 const interestOptions = [
-  "동물",
-  "공주",
-  "마법",
-  "우주",
-  "공룡",
-  "바다",
-  "요리",
-  "그림",
-  "음악",
+  "가족",
+  "사랑",
+  "우정",
+  "모험",
   "자연",
-  "친구",
-  "자동차",
-  "로봇",
-  "계절",
+  "마법",
+  "꿈",
+  "동네",
+  "전래동화",
+  "용기",
+  "과학",
+  "예술",
+  "우주",
+  "건강",
+  "창의",
 ];
 
 const bookOptions = [
