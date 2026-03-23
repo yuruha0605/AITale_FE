@@ -91,7 +91,7 @@ input {
   margin: 0 0 10px;
   font-size: clamp(1.8rem, 2.6vw, 2.8rem);
   color: #2f2a4a;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1.15;
 }

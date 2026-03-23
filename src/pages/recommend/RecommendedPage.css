@@ -233,6 +233,7 @@
   font-size: 17px;
   flex-shrink: 0;
   transition: 0.2s ease;
+    position: relative;
 }
 
 .like-btn:hover {

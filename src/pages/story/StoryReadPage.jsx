@@ -49,9 +49,6 @@ export default function StoryReadPage() {
 
   return (
     <div className="story-read-page">
-      {/* 배경 */}
-     <div className="story-ground" />
-     
       <div className="story-read-card">
         <div className="story-top-row">
            <button className="story-btn story-btn-secondary" onClick={() => navigate(-1)}>
