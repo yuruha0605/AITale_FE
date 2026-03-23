@@ -140,7 +140,7 @@ export default function MainPage() {
 
             <div
               className="quick-menu-card"
-              onClick={() => navigate("/mypage")}
+              onClick={() => navigate("/myreport")}
             >
               <div className="quick-icon">🧸</div>
               <h4>내 공간</h4>

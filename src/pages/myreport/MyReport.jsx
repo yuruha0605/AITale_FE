@@ -124,8 +124,8 @@ export default function MyReport() {
         <section className="mypage-report-section">
           <div className="report-section-header">
             <div>
-              <p className="section-eyebrow">📈 학습 리포트</p>
-              <h2>나의 독해력 성장 그래프</h2>
+              <p className="section-eyebrow"></p>
+              <h2>📈 나의 독해력 성장 그래프</h2>
               <p className="section-desc">
                 퀴즈 기록을 바탕으로 얼마나 성장하고 있는지 확인해보세요.
               </p>
