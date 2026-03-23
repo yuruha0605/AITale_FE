@@ -181,7 +181,7 @@ export default function RecommendedPage() {
 
           <button
             className="books-nav-item"
-            onClick={() => navigate("/mypage")}
+            onClick={() => navigate("/myrepo")}
           >
             <span>👤</span>
             마이페이지
@@ -227,7 +227,7 @@ export default function RecommendedPage() {
 
                       <button
                         type="button"
-                        className={`like-btn ${book.liked ? "active" : ""}`}
+                        className={`book-like-btn ${book.liked ? "active" : ""}`}
                         onClick={() => handleToggleLike(book.id)}
                         aria-label="좋아요"
                       >

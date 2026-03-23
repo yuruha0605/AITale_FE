@@ -223,7 +223,7 @@
   color: #5d6b61;
 }
 
-.like-btn {
+.book-like-btn {
   width: 40px;
   height: 40px;
   border: none;
@@ -236,11 +236,11 @@
     position: relative;
 }
 
-.like-btn:hover {
+.book-like-btn:hover {
   transform: scale(1.04);
 }
 
-.like-btn.active {
+.book-like-btn.active {
   background: #e7f8ea;
 }
 
