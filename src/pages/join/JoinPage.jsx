@@ -80,7 +80,7 @@ export default function JoinPage() {
   };
 
   const handleNextFromStep1 = () => {
-    if (!form.userId.trim() || !form.password.trim() || !form.birth.trim()) {
+    if (!form.userId.trim() || !form.password.trim() || !form.age.trim()) {
       alert("아이디, 비밀번호, 생년월일을 입력해 주세요.");
       return;
     }
