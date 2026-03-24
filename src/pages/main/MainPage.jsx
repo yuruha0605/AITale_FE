@@ -117,7 +117,7 @@ export default function MainPage() {
           </div>
 
           <div className="quick-menu-grid">
-            <div className="quick-menu-card" onClick={() => navigate("/story/:id")}>
+            <div className="quick-menu-card" onClick={() => navigate("/recommended")}>
               <div className="quick-icon">📚</div>
               <h4>동화 읽기</h4>
               <p>재미있는 동화를 골라 읽어요</p>
