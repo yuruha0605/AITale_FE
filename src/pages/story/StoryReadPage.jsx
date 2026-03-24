@@ -11,12 +11,15 @@ export default function StoryReadPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [imageLoading, setImageLoading] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     async function fetchStoryDetail() {
       try {
         setLoading(true);
         setError("");
+        setImageError(false);
 
         const response = await fetch(buildApiUrl(`/story/${id}`), {
           method: "GET",
@@ -32,22 +35,69 @@ export default function StoryReadPage() {
         const result = await response.json();
         const data = result?.data ?? result;
 
-        setStory({
+        const normalizedStory = {
           id: data.storyId ?? Number(id),
           title: data.title ?? "제목 없음",
           genre: data.genreName ?? data.genre ?? "미분류",
           length: data.charCount ?? data.length ?? 0,
           content: data.content ?? "동화 내용이 없습니다.",
-          image:
-            data.aiImageUrl ||
-            data.imageUrl ||
-            "https://placehold.co/600x400?text=Story+Image",
-        });
+          image: data.aiImageUrl ?? data.imageUrl ?? "",
+        };
+
+        setStory(normalizedStory);
+
+        if (!normalizedStory.image) {
+          await generateStoryImage(normalizedStory.id);
+        }
       } catch (err) {
         console.error(err);
         setError("동화를 불러오지 못했어요.");
       } finally {
         setLoading(false);
+      }
+    }
+
+    async function generateStoryImage(storyId) {
+      try {
+        setImageLoading(true);
+        setImageError(false);
+
+        const response = await fetch(buildApiUrl(`/story/${storyId}/ai-image`), {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            style: "fairy-tale",
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`이미지 생성 실패: ${response.status}`);
+        }
+
+        const result = await response.json();
+        const data = result?.data ?? result;
+
+        const generatedImageUrl = data?.imageUrl ?? "";
+
+        if (generatedImageUrl) {
+          setStory((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  image: generatedImageUrl,
+                }
+              : prev
+          );
+        } else {
+          setImageError(true);
+        }
+      } catch (err) {
+        console.error(err);
+        setImageError(true);
+      } finally {
+        setImageLoading(false);
       }
     }
 
@@ -81,6 +131,7 @@ export default function StoryReadPage() {
   }, [story]);
 
   const totalPages = storyPages.length;
+  const hasImage = Boolean(story?.image) && !imageError;
 
   const handlePrevPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 0));
@@ -155,9 +206,26 @@ export default function StoryReadPage() {
 
             <div className="story-image-block">
               <div className="story-image-frame">
-                <img src={story.image} alt={story.title} className="story-image" />
+                {hasImage ? (
+                  <img
+                    src={story.image}
+                    alt={story.title}
+                    className="story-image"
+                    onError={() => setImageError(true)}
+                  />
+                ) : (
+                  <div className="story-image-placeholder">
+                    {imageLoading ? "AI 이미지 생성 중이에요..." : "AI 이미지가 아직 없어요"}
+                  </div>
+                )}
               </div>
-              <p className="story-image-caption">동화 대표 이미지</p>
+              <p className="story-image-caption">
+                {hasImage
+                  ? "AI 생성 이미지"
+                  : imageLoading
+                  ? "이미지 생성 중"
+                  : "이미지 준비 중"}
+              </p>
             </div>
 
             <div className="story-body-box">
