@@ -1,7 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { buildApiUrl } from "../../config/api";
+import { get } from "../../services/httpClient";
 import "./RecommendedPage.css";
+
+function normalizeStoryListPayload(responseData) {
+  if (Array.isArray(responseData?.data)) {
+    return responseData.data;
+  }
+
+  if (Array.isArray(responseData)) {
+    return responseData;
+  }
+
+  return [];
+}
 
 export default function RecommendedPage() {
   const navigate = useNavigate();
@@ -14,7 +26,7 @@ export default function RecommendedPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const storedUserId = localStorage.getItem("userId") || "1";
+  const storedUserId = localStorage.getItem("userId");
 
   useEffect(() => {
     async function fetchBooks() {
@@ -23,29 +35,23 @@ export default function RecommendedPage() {
         setError("");
 
         if (activeMenu === "recommended") {
-          const response = await fetch(
-            buildApiUrl(`/api/v1/recommendations/users/${storedUserId}?size=3&refresh=false`),
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
-
-          if (!response.ok) {
-            throw new Error(`추천 조회 실패: ${response.status}`);
+          if (!storedUserId) {
+            throw new Error("사용자 정보가 없어요. 다시 로그인해 주세요.");
           }
 
-          const result = await response.json();
-          const recommendationData = result?.data?.recommendations ?? [];
+          const response = await get(
+            `/api/v1/recommendations/users/${storedUserId}?size=3&refresh=false`
+          );
+
+          const recommendationData = response?.data?.data?.recommendations ?? [];
 
           const mappedBooks = recommendationData.map((item) => ({
             id: item.storyId,
             title: item.title,
             description: item.reason,
-            level: item.basedDifficulty ?? `레벨 ${item.basedLevel}`,
-            cover: "📖",
+            level: item.basedDifficulty ?? `레벨 ${item.basedLevel ?? "-"}`,
+            coverImage: item.aiImageUrl ?? item.imageUrl ?? null,
+            coverFallback: "📖",
             recommended: true,
           }));
 
@@ -53,26 +59,16 @@ export default function RecommendedPage() {
         }
 
         if (activeMenu === "all") {
-          const response = await fetch(buildApiUrl("/story"), {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-
-          if (!response.ok) {
-            throw new Error(`전체 책 조회 실패: ${response.status}`);
-          }
-
-          const result = await response.json();
-          const storyData = result?.data ?? result ?? [];
+          const response = await get("/story");
+          const storyData = normalizeStoryListPayload(response?.data);
 
           const mappedBooks = storyData.map((item) => ({
             id: item.storyId,
             title: item.title,
             description: item.content ?? "동화 설명이 없습니다.",
             level: item.charCount ?? item.length ?? 0,
-            cover: "📖",
+            coverImage: item.aiImageUrl ?? item.imageUrl ?? null,
+            coverFallback: "📖",
             recommended: false,
           }));
 
@@ -80,14 +76,29 @@ export default function RecommendedPage() {
         }
       } catch (err) {
         console.error(err);
-        setError("책 목록을 불러오지 못했어요.");
+
+        if (err.status === 401) {
+          setError("로그인이 필요해요.");
+          return;
+        }
+
+        if (err.status === 403) {
+          setError("이 데이터에 접근할 권한이 없어요.");
+          return;
+        }
+
+        setError(
+          err?.data?.message || err.message || "책 목록을 불러오지 못했어요."
+        );
       } finally {
         setLoading(false);
       }
+      
     }
 
     fetchBooks();
   }, [activeMenu, storedUserId]);
+  
 
   const handleToggleLike = (id) => {
     setLikedBookIds((prev) =>
@@ -191,10 +202,7 @@ export default function RecommendedPage() {
             좋아요 누른 책
           </button>
 
-          <button
-            className="books-nav-item"
-            onClick={() => navigate("/myreport")}
-          >
+          <button className="books-nav-item" onClick={() => navigate("/myreport")}>
             <span>👤</span>
             마이페이지
           </button>
@@ -230,21 +238,48 @@ export default function RecommendedPage() {
                 searchedBooks.map((book) => (
                   <article className="book-list-card" key={book.id}>
                     <div className="book-cover-box">
-                      <div className="book-cover-emoji">{book.cover}</div>
+                      {book.coverImage ? (
+                        <img
+                          src={book.coverImage}
+                          alt={`${book.title} 표지`}
+                          className="book-cover-image"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                            const fallback =
+                              e.currentTarget.parentElement?.querySelector(
+                                ".book-cover-emoji"
+                              );
+                            if (fallback) {
+                              fallback.style.display = "flex";
+                            }
+                          }}
+                        />
+                      ) : null}
+
+                      <div
+                        className="book-cover-emoji"
+                        style={{ display: book.coverImage ? "none" : "flex" }}
+                      >
+                        {book.coverFallback}
+                      </div>
                     </div>
 
                     <div className="book-list-body">
                       <div className="book-list-top">
                         <div className="book-title-row">
                           <h3>{book.title}</h3>
-                          <span className={`level-chip ${String(book.level).replace(/\s/g, "")}`}>
+                          <span
+                            className={`level-chip ${String(book.level).replace(/\s/g, "")}`}
+                          >
                             {book.level}
                           </span>
                         </div>
 
                         <button
                           type="button"
-                          className={`book-like-btn ${likedBookIds.includes(book.id) ? "active" : ""}`}
+                          className={`book-like-btn ${
+                            likedBookIds.includes(book.id) ? "active" : ""
+                          }`}
                           onClick={() => handleToggleLike(book.id)}
                           aria-label="좋아요"
                         >

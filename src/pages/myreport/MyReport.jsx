@@ -1,5 +1,4 @@
-import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
 import {
   ResponsiveContainer,
   Bar,
@@ -9,64 +8,108 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { get } from "../../services/httpClient";
 import "./MyReport.css";
 
-export default function MyReport() {
-  const navigate = useNavigate();
+function getStoredUser() {
+  const storedUserId = localStorage.getItem("userId");
+  const storedUserName = localStorage.getItem("userName");
+  const storedUserAge = localStorage.getItem("userAge");
+  const storedUserTier = localStorage.getItem("userTier");
 
-  const user = {
-    userId: "chaelyn",
-    age: 9,
-    tier: "중급",
+  return {
+    userId: storedUserId ? Number(storedUserId) : null,
+    name: storedUserName || "사용자",
+    age: storedUserAge ? Number(storedUserAge) : null,
+    tier: storedUserTier || "학습자",
   };
+}
 
-  const level = 1;
-  const progress = 60;
+export default function MyReport() {
+  const user = useMemo(() => getStoredUser(), []);
 
-  const pendingQuiz = [
-    { id: 1, title: "빨간 모자", desc: "읽기 완료 · 퀴즈 미완료" },
-    { id: 2, title: "헨젤과 그레텔", desc: "읽는 중 · 퀴즈 대기" },
-    { id: 3, title: "아기 돼지 삼형제", desc: "추천 퀴즈" },
-  ];
+  const [chartData, setChartData] = useState([]);
+  const [accuracy, setAccuracy] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const completedQuiz = [
-    { id: 1, title: "백설공주", score: "90점" },
-    { id: 2, title: "신데렐라", score: "100점" },
-    { id: 3, title: "토끼와 거북이", score: "85점" },
-  ];
+  useEffect(() => {
+    async function fetchAnalytics() {
+      if (!user.userId) {
+        setError("사용자 정보가 없어요. 다시 로그인해 주세요.");
+        setLoading(false);
+        return;
+      }
 
-  const readBooks = [
-    { id: 1, title: "백설공주", genre: "공주 / 판타지" },
-    { id: 2, title: "토끼와 거북이", genre: "우화" },
-    { id: 3, title: "피노키오", genre: "모험" },
-    { id: 4, title: "엄지공주", genre: "판타지" },
-  ];
+      try {
+        setLoading(true);
+        setError("");
 
-  const likedBooks = [
-    { id: 1, title: "미운 오리 새끼", genre: "성장" },
-    { id: 2, title: "흥부와 놀부", genre: "전래" },
-    { id: 3, title: "해님 달님", genre: "전래" },
-  ];
+        const today = new Date();
+        const from = new Date();
+        from.setDate(today.getDate() - 6);
 
-  const history = JSON.parse(localStorage.getItem("quizHistory") || "[]");
+        const formatDate = (date) => {
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const day = String(date.getDate()).padStart(2, "0");
+          return `${year}-${month}-${day}`;
+        };
 
-  const chartData = useMemo(() => {
-    const grouped = {};
+        const fromDate = formatDate(from);
+        const toDate = formatDate(today);
 
-    history.forEach((item) => {
-      if (!grouped[item.date]) grouped[item.date] = 0;
-      grouped[item.date] += item.score;
-    });
+        const [dailyScoresRes, accuracyRes] = await Promise.all([
+          get(
+            `/api/v1/analytics/users/${user.userId}/daily-scores?from=${fromDate}&to=${toDate}`
+          ),
+          get(`/api/v1/analytics/users/${user.userId}/accuracy`),
+        ]);
 
-    return Object.keys(grouped).map((date) => ({
-      date,
-      score: grouped[date],
-    }));
-  }, [history]);
+        const dailyScores = dailyScoresRes?.data?.data?.dailyScores ?? [];
+        const accuracyData = accuracyRes?.data?.data ?? null;
 
-  const bestScore = Math.max(...chartData.map((d) => d.score), 0);
+        setChartData(
+          dailyScores.map((item) => ({
+            date: item.statDate,
+            score: item.totalScoreSum ?? 0,
+            quizCount: item.quizCount ?? 0,
+            correctCount: item.correctCount ?? 0,
+            wrongCount: item.wrongCount ?? 0,
+            avgScore: item.avgScore ?? 0,
+          }))
+        );
+
+        setAccuracy(accuracyData);
+      } catch (err) {
+        if (err.status === 401) {
+          setError("로그인이 필요해요.");
+          return;
+        }
+
+        if (err.status === 403) {
+          setError("이 데이터에 접근할 권한이 없어요.");
+          return;
+        }
+
+        setError(
+          err?.data?.message || err.message || "데이터를 불러오는 중 오류가 발생했어요."
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchAnalytics();
+  }, [user.userId]);
+
   const totalDays = chartData.length;
+  const bestScore = Math.max(...chartData.map((d) => d.score), 0);
+  const totalQuizCount = chartData.reduce((sum, item) => sum + item.quizCount, 0);
   const latest = chartData[chartData.length - 1]?.score || 0;
+  const accuracyPercent = accuracy
+    ? ((accuracy.accuracy ?? 0) * 100).toFixed(1)
+    : "0.0";
 
   return (
     <div className="mypage-page">
@@ -82,23 +125,13 @@ export default function MyReport() {
 
             <div className="mypage-profile-text">
               <div className="name-row">
-                <h2 className="profile-name">{user.userId}</h2>
-                <span className="profile-age">{user.age}세</span>
+                <h2 className="profile-name">{user.name}</h2>
+                {user.age && <span className="profile-age">{user.age}세</span>}
               </div>
 
               <div className="mypage-level-box">
                 <div className="level-top">
-                  <span className="level-text">
-                    Lv. {level} {user.tier}
-                  </span>
-                  <span className="level-percent">{progress}%</span>
-                </div>
-
-                <div className="level-bar">
-                  <div
-                    className="level-bar-fill"
-                    style={{ width: `${progress}%` }}
-                  />
+                  <span className="level-text">{user.tier}</span>
                 </div>
               </div>
             </div>
@@ -106,25 +139,23 @@ export default function MyReport() {
 
           <div className="mypage-stats">
             <div className="stat-box">
-              <strong>{readBooks.length}</strong>
-              <span>읽은 책</span>
+              <strong>{totalDays}</strong>
+              <span>학습일</span>
             </div>
             <div className="stat-box">
-              <strong>{completedQuiz.length}</strong>
-              <span>완료한 퀴즈</span>
+              <strong>{totalQuizCount}</strong>
+              <span>전체 퀴즈 수</span>
             </div>
             <div className="stat-box">
-              <strong>{likedBooks.length}</strong>
-              <span>좋아요</span>
+              <strong>{accuracyPercent}%</strong>
+              <span>정확도</span>
             </div>
           </div>
         </section>
 
-        {/* 학습 리포트 */}
         <section className="mypage-report-section">
           <div className="report-section-header">
             <div>
-              <p className="section-eyebrow"></p>
               <h2>📈 나의 독해력 성장 그래프</h2>
               <p className="section-desc">
                 퀴즈 기록을 바탕으로 얼마나 성장하고 있는지 확인해보세요.
@@ -132,34 +163,40 @@ export default function MyReport() {
             </div>
           </div>
 
-          <div className="report-summary-row">
-            <div className="report-summary-box">
-              <span className="report-summary-icon">📅</span>
-              <div className="report-summary-text">
-                <p>학습일</p>
-                <strong>{totalDays}</strong>
+          {!loading && !error && (
+            <div className="report-summary-row">
+              <div className="report-summary-box">
+                <span className="report-summary-icon">📅</span>
+                <div className="report-summary-text">
+                  <p>학습일</p>
+                  <strong>{totalDays}</strong>
+                </div>
               </div>
-            </div>
 
-            <div className="report-summary-box">
-              <span className="report-summary-icon">🏆</span>
-              <div className="report-summary-text">
-                <p>최고 점수</p>
-                <strong>{bestScore}</strong>
+              <div className="report-summary-box">
+                <span className="report-summary-icon">🏆</span>
+                <div className="report-summary-text">
+                  <p>최고 점수</p>
+                  <strong>{bestScore}</strong>
+                </div>
               </div>
-            </div>
 
-            <div className="report-summary-box">
-              <span className="report-summary-icon">🔥</span>
-              <div className="report-summary-text">
-                <p>최근 점수</p>
-                <strong>{latest}</strong>
+              <div className="report-summary-box">
+                <span className="report-summary-icon">🎯</span>
+                <div className="report-summary-text">
+                  <p>정확도</p>
+                  <strong>{accuracyPercent}%</strong>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           <div className="report-chart-box">
-            {chartData.length > 0 ? (
+            {loading ? (
+              <div className="mypage-report-empty">불러오는 중이에요...</div>
+            ) : error ? (
+              <div className="mypage-report-empty">{error}</div>
+            ) : chartData.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -172,7 +209,13 @@ export default function MyReport() {
                     tick={{ fontSize: 12 }}
                   />
                   <YAxis />
-                  <Tooltip />
+                  <Tooltip
+                    formatter={(value) => [`${value}점`, "점수"]}
+                    labelFormatter={(label) => {
+                      const d = new Date(label);
+                      return `${d.getMonth() + 1}월 ${d.getDate()}일`;
+                    }}
+                  />
                   <Bar
                     dataKey="score"
                     barSize={36}
@@ -188,104 +231,16 @@ export default function MyReport() {
             )}
           </div>
 
-          {chartData.length > 0 && (
+          {!loading && !error && chartData.length > 0 && (
             <p className="mypage-report-message">
               📊 오늘도 한 걸음 성장했어요!
-              {latest >= 4
+              {latest >= 100
                 ? " 🔥 오늘 정말 잘했어요!"
-                : latest >= 2
+                : latest >= 50
                 ? " 👍 조금만 더 하면 최고예요!"
                 : " 💪 다시 도전해볼까요?"}
             </p>
           )}
-        </section>
-
-        {/* 퀴즈 묶음 */}
-        <section className="content-group-section">
-          <div className="group-header">
-            <h2>📝 퀴즈 모아보기</h2>
-            <p>진행 중인 퀴즈와 완료한 퀴즈를 확인해요</p>
-          </div>
-
-          <div className="group-grid">
-            <div className="dashboard-card">
-              <div className="card-header">
-                <h3>✅ 풀었던 퀴즈</h3>
-              </div>
-              <div className="compact-list">
-                {completedQuiz.map((quiz) => (
-                  <div className="compact-item green" key={quiz.id}>
-                    <div>
-                      <strong>{quiz.title}</strong>
-                      <p>점수: {quiz.score}</p>
-                    </div>
-                    <button onClick={() => navigate("/story")}>다시보기</button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="dashboard-card">
-              <div className="card-header">
-                <h3>📝 풀어야 할 퀴즈</h3>
-              </div>
-              <div className="compact-list">
-                {pendingQuiz.map((quiz) => (
-                  <div className="compact-item warm" key={quiz.id}>
-                    <div>
-                      <strong>{quiz.title}</strong>
-                      <p>{quiz.desc}</p>
-                    </div>
-                    <button onClick={() => navigate("/story")}>풀러가기</button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 책 묶음 */}
-        <section className="content-group-section">
-          <div className="group-header">
-            <h2>📚 책 모아보기</h2>
-            <p>읽었던 책과 좋아요 누른 책을 확인해요</p>
-          </div>
-
-          <div className="group-grid">
-            <div className="dashboard-card">
-              <div className="card-header">
-                <h3>📚 읽었던 책</h3>
-              </div>
-              <div className="mini-grid">
-                {readBooks.map((book) => (
-                  <div className="mini-book-card" key={book.id}>
-                    <div className="book-icon">📖</div>
-                    <div>
-                      <strong>{book.title}</strong>
-                      <p>{book.genre}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="dashboard-card">
-              <div className="card-header">
-                <h3>💗 좋아요 누른 책</h3>
-              </div>
-              <div className="mini-grid">
-                {likedBooks.map((book) => (
-                  <div className="mini-book-card pink" key={book.id}>
-                    <div className="book-icon">💝</div>
-                    <div>
-                      <strong>{book.title}</strong>
-                      <p>{book.genre}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
         </section>
       </div>
     </div>
