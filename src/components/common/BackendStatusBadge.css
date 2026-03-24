@@ -1,0 +1,58 @@
+.backend-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.1px;
+  background: #f4f4f5;
+  color: #3f3f46;
+}
+
+.backend-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+
+.backend-status-badge.checking {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.backend-status-badge.checking .backend-status-dot {
+  background: #60a5fa;
+}
+
+.backend-status-badge.up {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.backend-status-badge.up .backend-status-dot {
+  background: #10b981;
+}
+
+.backend-status-badge.down {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.backend-status-badge.down .backend-status-dot {
+  background: #ef4444;
+}
+
+@media (max-width: 768px) {
+  .backend-status-badge {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  .backend-status-dot {
+    width: 7px;
+    height: 7px;
+  }
+}
