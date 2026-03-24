@@ -1,28 +1,73 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import StoryData from "../../data/StoryData";
+import { buildApiUrl } from "../../config/api";
 import "./StoryReadPage.css";
 
 export default function StoryReadPage() {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const story = useMemo(() => {
-    if (id) {
-      return StoryData.find((item) => String(item.id) === String(id)) || StoryData[0];
+  const [story, setStory] = useState(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    async function fetchStoryDetail() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await fetch(buildApiUrl(`/story/${id}`), {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`동화 조회 실패: ${response.status}`);
+        }
+
+        const result = await response.json();
+        const data = result?.data ?? result;
+
+        setStory({
+          id: data.storyId ?? Number(id),
+          title: data.title ?? "제목 없음",
+          genre: data.genreName ?? data.genre ?? "미분류",
+          length: data.charCount ?? data.length ?? 0,
+          content: data.content ?? "동화 내용이 없습니다.",
+          image:
+            data.aiImageUrl ||
+            data.imageUrl ||
+            "https://placehold.co/600x400?text=Story+Image",
+        });
+      } catch (err) {
+        console.error(err);
+        setError("동화를 불러오지 못했어요.");
+      } finally {
+        setLoading(false);
+      }
     }
-    return StoryData[0];
+
+    if (id) {
+      fetchStoryDetail();
+    }
   }, [id]);
 
-  // 문단 기준으로 페이지 나누기
   const storyPages = useMemo(() => {
+    if (!story?.content) {
+      return [];
+    }
+
     const paragraphs = story.content
       .split("\n\n")
       .map((text) => text.trim())
       .filter(Boolean);
 
     const pages = [];
-    const PAGE_SIZE = 3; // 페이지당 문단 수
+    const PAGE_SIZE = 3;
 
     for (let i = 0; i < paragraphs.length; i += PAGE_SIZE) {
       pages.push(paragraphs.slice(i, i + PAGE_SIZE));
@@ -30,8 +75,6 @@ export default function StoryReadPage() {
 
     return pages;
   }, [story]);
-
-  const [currentPage, setCurrentPage] = useState(0);
 
   useEffect(() => {
     setCurrentPage(0);
@@ -47,17 +90,46 @@ export default function StoryReadPage() {
     setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1));
   };
 
+  if (loading) {
+    return (
+      <div className="story-read-page">
+        <div className="story-read-card">
+          <p>동화를 불러오는 중이에요.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !story) {
+    return (
+      <div className="story-read-page">
+        <div className="story-read-card">
+          <p>{error || "동화를 찾을 수 없어요."}</p>
+          <button
+            className="story-btn story-btn-secondary"
+            onClick={() => navigate(-1)}
+          >
+            이전
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="story-read-page">
       <div className="story-read-card">
         <div className="story-top-row">
-           <button className="story-btn story-btn-secondary" onClick={() => navigate(-1)}>
-            이전 </button>
+          <button
+            className="story-btn story-btn-secondary"
+            onClick={() => navigate(-1)}
+          >
+            이전
+          </button>
           <div className="story-progress-text">동화 읽기</div>
         </div>
 
         <div className="story-main-layout">
-          {/* 왼쪽: 메타 정보 */}
           <aside className="story-side-panel">
             <div className="story-meta-box">
               <div className="story-meta-item">
@@ -70,33 +142,29 @@ export default function StoryReadPage() {
               </div>
               <div className="story-meta-item full">
                 <span className="story-meta-label">데이터 출처</span>
-                <span className="story-meta-value">
-                  추후 공공데이터 기반 동화 데이터 연동 예정
-                </span>
+                <span className="story-meta-value">동화 상세 API 연동</span>
               </div>
             </div>
           </aside>
 
-          {/* 오른쪽: 제목 + 이미지 + 내용 */}
           <section className="story-content-panel">
             <header className="story-header">
               <h1 className="story-title">{story.title}</h1>
               <p className="story-subtitle">오늘도 재미있는 동화를 읽어볼까요?</p>
             </header>
 
-            {/* 이미지 위치를 내용 바로 위로 이동 */}
             <div className="story-image-block">
               <div className="story-image-frame">
                 <img src={story.image} alt={story.title} className="story-image" />
               </div>
-              <p className="story-image-caption">AI 생성 이미지 예시</p>
+              <p className="story-image-caption">동화 대표 이미지</p>
             </div>
 
             <div className="story-body-box">
               <div className="story-body-top">
                 <div className="story-body-title">내용</div>
                 <div className="story-page-indicator">
-                  {currentPage + 1} / {totalPages}
+                  {totalPages > 0 ? currentPage + 1 : 0} / {totalPages}
                 </div>
               </div>
 
@@ -128,7 +196,10 @@ export default function StoryReadPage() {
         </div>
 
         <div className="story-bottom-row">
-          <button className="story-btn story-btn-primary" onClick={() => navigate("/quiz/intro")} >
+          <button
+            className="story-btn story-btn-primary"
+            onClick={() => navigate(`/quiz/intro?storyId=${story.id}`)}
+          >
             퀴즈 풀기 →
           </button>
         </div>
