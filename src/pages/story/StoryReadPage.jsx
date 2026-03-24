@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { buildApiUrl } from "../../config/api";
 import "./StoryReadPage.css";
@@ -13,6 +13,16 @@ export default function StoryReadPage() {
   const [error, setError] = useState("");
   const [imageLoading, setImageLoading] = useState(false);
   const [imageError, setImageError] = useState(false);
+
+  const requestedImageRef = useRef(false);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const normalizeStory = (data, storyId) => ({
     id: data.storyId ?? Number(storyId),
@@ -40,32 +50,6 @@ export default function StoryReadPage() {
     return normalizeStory(data, storyId);
   };
 
-  useEffect(() => {
-    async function loadStory() {
-      try {
-        setLoading(true);
-        setError("");
-        setImageError(false);
-
-        const normalizedStory = await fetchStoryDetailById(id);
-        setStory(normalizedStory);
-
-        if (!normalizedStory.image) {
-          generateStoryImage(normalizedStory.id);
-        }
-      } catch (err) {
-        console.error(err);
-        setError("동화를 불러오지 못했어요.");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    if (id) {
-      loadStory();
-    }
-  }, [id]);
-
   const generateStoryImage = async (storyId) => {
     try {
       setImageLoading(true);
@@ -89,7 +73,8 @@ export default function StoryReadPage() {
       const data = result?.data ?? result;
       const generatedImageUrl = data?.imageUrl ?? "";
 
-      if (generatedImageUrl) {
+      if (generatedImageUrl && mountedRef.current) {
+        setImageError(false);
         setStory((prev) =>
           prev
             ? {
@@ -102,18 +87,64 @@ export default function StoryReadPage() {
       }
 
       const refreshedStory = await fetchStoryDetailById(storyId);
+      if (!mountedRef.current) {
+        return;
+      }
+
       if (refreshedStory.image) {
+        setImageError(false);
         setStory(refreshedStory);
       } else {
         setImageError(true);
       }
     } catch (err) {
       console.error(err);
-      setImageError(true);
+      if (mountedRef.current) {
+        setImageError(true);
+      }
     } finally {
-      setImageLoading(false);
+      if (mountedRef.current) {
+        setImageLoading(false);
+      }
     }
   };
+
+  useEffect(() => {
+    requestedImageRef.current = false;
+
+    async function loadStory() {
+      try {
+        setLoading(true);
+        setError("");
+        setImageError(false);
+
+        const normalizedStory = await fetchStoryDetailById(id);
+        if (!mountedRef.current) {
+          return;
+        }
+
+        setStory(normalizedStory);
+
+        if (!normalizedStory.image && !requestedImageRef.current) {
+          requestedImageRef.current = true;
+          generateStoryImage(normalizedStory.id);
+        }
+      } catch (err) {
+        console.error(err);
+        if (mountedRef.current) {
+          setError("동화를 불러오지 못했어요.");
+        }
+      } finally {
+        if (mountedRef.current) {
+          setLoading(false);
+        }
+      }
+    }
+
+    if (id) {
+      loadStory();
+    }
+  }, [id]);
 
   const storyPages = useMemo(() => {
     if (!story?.content) {
@@ -148,6 +179,13 @@ export default function StoryReadPage() {
 
   const handleNextPage = () => {
     setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1));
+  };
+
+  const handleGenerateImageClick = () => {
+    if (story?.id && !imageLoading) {
+      requestedImageRef.current = true;
+      generateStoryImage(story.id);
+    }
   };
 
   if (loading) {
@@ -215,18 +253,49 @@ export default function StoryReadPage() {
 
             <div className="story-image-block">
               <div className="story-image-frame">
+                {hasImage ? (
                   <img
                     src={story.image}
                     alt={story.title}
                     className="story-image"
-                    onError={() => setImageError(true)}
+                    onLoad={() => setImageError(false)}
+                    onError={() => {
+                      console.error("이미지 로드 실패:", story.image);
+                      setImageError(true);
+                    }}
                   />
+                ) : (
+                  <div className="story-image-placeholder">
+                    {imageLoading ? (
+                      <div className="story-image-loading-text">
+                        <span>AI 이미지가 생성되는 중이에요.</span>
+                        <small>잠시만 기다려 주세요.</small>
+                      </div>
+                    ) : imageError ? (
+                      <div className="story-image-loading-text">
+                        <span>이미지를 불러오지 못했어요.</span>
+                        <small>잠시 후 다시 시도해 주세요.</small>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        className="story-generate-image-btn"
+                        onClick={handleGenerateImageClick}
+                      >
+                        AI 이미지 생성하기
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
+
               <p className="story-image-caption">
                 {hasImage
                   ? "AI 생성 이미지"
                   : imageLoading
                   ? "이미지 생성 중"
+                  : imageError
+                  ? "이미지 로드 실패"
                   : "이미지 준비 중"}
               </p>
             </div>
