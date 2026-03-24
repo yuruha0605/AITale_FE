@@ -1,14 +1,34 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  buildSocialLoginUrl,
+  persistAuth,
+  signIn,
+} from "../../services/userService";
 import "./LoginPage.css";
 
 export default function LoginPage() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    id: "",
+    email: "",
     password: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const accessToken = params.get("accessToken");
+    const refreshToken = params.get("refreshToken");
+
+    if (!accessToken) {
+      return;
+    }
+
+    persistAuth(accessToken, refreshToken || "");
+    window.history.replaceState({}, "", window.location.pathname);
+    navigate("/main", { replace: true });
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -18,20 +38,37 @@ export default function LoginPage() {
     }));
   };
 
-  /*const handleLogin = () => {
-    console.log("로그인 시도:", form);
+  const handleLogin = async () => {
+    if (!form.email.trim() || !form.password.trim()) {
+      alert("이메일과 비밀번호를 입력해 주세요.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const result = await signIn({
+        email: form.email.trim(),
+        password: form.password,
+      });
+
+      if (!result.accessToken) {
+        throw new Error("access token missing");
+      }
+
+      navigate("/main");
+    } catch (error) {
+      console.error("로그인 실패", error);
+      alert("로그인에 실패했습니다. 입력 정보를 확인해 주세요.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleSignup = () => {
-    console.log("회원가입 페이지로 이동");
-  };*/
-
-  //간편 로그인 함수 
+  //간편 로그인 함수
   const handleSocialLogin = (provider) => {
-  console.log(provider + " 간편 로그인 시도");
+    console.log(provider + " 간편 로그인 시도");
 
-  // 백엔드 OAuth 로그인 주소로 이동 ?? 
-  window.location.href = `http://localhost:8080/oauth2/authorization/${provider}`;
+    window.location.href = buildSocialLoginUrl(provider);
   };
 
   return (
@@ -67,9 +104,9 @@ export default function LoginPage() {
           <div className="input-group">
             <input
               type="text"
-              name="id"
-              placeholder="ID"
-              value={form.id}
+              name="email"
+              placeholder="Email"
+              value={form.email}
               onChange={handleChange}
             />
           </div>
@@ -84,13 +121,21 @@ export default function LoginPage() {
             />
           </div>
 
-          <button className="login-button" onClick={() => navigate("/main")}>
-            로그인
+          <button
+            className="login-button"
+            onClick={handleLogin}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "로그인 중..." : "로그인"}
           </button>
 
-          <button className="signup-button" onClick={() => navigate("/join")}>
+          <button
+            className="signup-button"
+            onClick={() => navigate("/join")}
+          >
             회원가입
           </button>
+          
           <div className="login-divider social-divider">
             <span>간편 로그인</span>
           </div>
