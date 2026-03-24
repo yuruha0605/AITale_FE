@@ -2,10 +2,10 @@ import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import "./QuizResult.css";
 
-const SCORE_BY_DIFFICULTY = {
-  하: 1,
-  중: 2,
-  상: 3,
+const REVERSE_DIFFICULTY_MAP = {
+  EASY: "하",
+  NORMAL: "중",
+  HARD: "상",
 };
 
 const BADGE_META = {
@@ -35,12 +35,6 @@ const BADGE_META = {
   },
 };
 
-function getNextDifficulty(level) {
-  if (level === "하") return "중";
-  if (level === "중") return "상";
-  return "상";
-}
-
 function getBaseBadgeKey(correctCount, difficulty) {
   if (correctCount <= 2) return "complete";
   if (correctCount <= 4) return "silver";
@@ -53,12 +47,7 @@ function saveQuizHistory({ score, exp, badge }) {
   const history = JSON.parse(localStorage.getItem("quizHistory") || "[]");
   const index = history.findIndex((item) => item.date === today);
 
-  const payload = {
-    date: today,
-    score,
-    exp,
-    badge,
-  };
+  const payload = { date: today, score, exp, badge };
 
   if (index >= 0) history[index] = payload;
   else history.push(payload);
@@ -66,7 +55,7 @@ function saveQuizHistory({ score, exp, badge }) {
   localStorage.setItem("quizHistory", JSON.stringify(history));
 }
 
-export default function QuizResultPage() {
+export default function QuizResult() {
   const navigate = useNavigate();
   const nickname = localStorage.getItem("nickname") || "친구";
   const difficulty =
@@ -74,47 +63,43 @@ export default function QuizResultPage() {
     localStorage.getItem("difficulty") ||
     "중";
 
-  const results = JSON.parse(localStorage.getItem("quizResults") || "[]").slice(0, 5);
+  const result = JSON.parse(localStorage.getItem("quizSubmitResult") || "{}");
 
-  const { correctCount, totalScore } = useMemo(() => {
-    let correct = 0;
-    let score = 0;
+  const correctCount = result?.baseCorrectCount || 0;
+  const totalScore = result?.totalScore || 0;
+  const hasBonus = !!result?.hasBonus;
+  const nextDifficulty = result?.nextDifficulty || null;
 
-    results.forEach((item) => {
-      if (item?.correct) correct += 1;
-      score += item?.score || 0;
-    });
+  const badgeKey = useMemo(
+    () => getBaseBadgeKey(correctCount, difficulty),
+    [correctCount, difficulty]
+  );
 
-    return { correctCount: correct, totalScore: score };
-  }, [results]);
-
-  const badgeKey = getBaseBadgeKey(correctCount, difficulty);
   const badge = BADGE_META[badgeKey];
-  const canTryExtra = correctCount === 5 && difficulty !== "상";
-  const baseDifficulty = localStorage.getItem("baseDifficulty") || "중";
-  const nextDifficulty = getNextDifficulty(baseDifficulty);
 
   useEffect(() => {
     localStorage.setItem("quizScore", String(totalScore));
     localStorage.setItem("quizExp", String(totalScore));
     localStorage.setItem("finalBadge", badge.title);
 
-    if (!canTryExtra) {
+    if (!hasBonus) {
       saveQuizHistory({
         score: correctCount,
         exp: totalScore,
         badge: badge.title,
       });
     }
-  }, [badge.title, canTryExtra, correctCount, totalScore]);
+  }, [badge.title, correctCount, hasBonus, totalScore]);
 
   const handleTryExtra = () => {
-    localStorage.removeItem("extraResults");
-    localStorage.setItem("extraDifficulty", nextDifficulty);
+    if (nextDifficulty) {
+      localStorage.setItem("extraDifficulty", nextDifficulty);
+    }
+    localStorage.removeItem("bonusAnswers");
     navigate("/quiz/extra/1");
-};
+  };
 
-  const handleSkip = () => {
+  const handleGoReport = () => {
     saveQuizHistory({
       score: correctCount,
       exp: totalScore,
@@ -123,35 +108,26 @@ export default function QuizResultPage() {
     navigate("/myreport");
   };
 
-  const handleRestart = () => {
-    localStorage.removeItem("quizResults");
-    localStorage.removeItem("extraResults");
-    localStorage.removeItem("quizScore");
-    localStorage.removeItem("quizExp");
-    localStorage.removeItem("finalBadge");
-    localStorage.removeItem("extraDifficulty");
-    navigate("/quiz/1");
-  };
+  const nextDifficultyText = nextDifficulty
+    ? REVERSE_DIFFICULTY_MAP[nextDifficulty] || nextDifficulty
+    : null;
 
   return (
     <div className="quiz-result-page">
-      <div className="quiz-result-bg">
-        <div className="quiz-bg-cloud cloud-1" />
-        <div className="quiz-bg-cloud cloud-2" />
-        <div className="quiz-bg-cloud cloud-3" />
-        <div className="quiz-bg-hill" />
+      <div className="result-bg">
+        <div className="result-bg-cloud cloud-1" />
+        <div className="result-bg-cloud cloud-2" />
+        <div className="result-bg-cloud cloud-3" />
+        <div className="result-bg-hill" />
       </div>
 
-      <main className="quiz-result-content">
-        <section className="quiz-result-card">
-          <div className="quiz-result-badge-top">🏆 퀴즈 결과</div>
+      <main className="result-content">
+        <section className="result-card">
+          <div className="result-top-badge">🏅 기본 퀴즈 결과</div>
 
-          <h1 className="quiz-result-title">
-            {nickname}의 기본 퀴즈 결과예요
-          </h1>
-
-          <p className="quiz-result-subtitle">
-            총 5문제를 풀고 얻은 결과를 확인해보세요.
+          <h1 className="result-title">{nickname}의 퀴즈 결과가 나왔어요</h1>
+          <p className="result-subtitle">
+            기본 문제 결과를 바탕으로 배지와 점수를 정리했어요.
           </p>
 
           <div className={`result-badge-card ${badge.className}`}>
@@ -162,61 +138,54 @@ export default function QuizResultPage() {
 
           <div className="result-summary-grid">
             <div className="result-summary-card">
-              <span>정답 수</span>
+              <span>기본 정답 수</span>
               <strong>{correctCount} / 5</strong>
             </div>
+
             <div className="result-summary-card">
-              <span>획득 점수</span>
+              <span>획득 EXP</span>
               <strong>{totalScore} EXP</strong>
             </div>
+
             <div className="result-summary-card">
-              <span>현재 난이도</span>
-              <strong>{difficulty}</strong>
+              <span>보너스 가능</span>
+              <strong>{hasBonus ? "가능" : "없음"}</strong>
             </div>
           </div>
 
-          {canTryExtra ? (
-            <div className="result-challenge-box">
-              <h3>한 단계 더 도전해볼까요?</h3>
+          {hasBonus && (
+            <div className="result-report-box">
+              <h3>추가 문제 도전 가능</h3>
               <p>
-                기본 5문제를 모두 맞혔어요.
-                <br />
-                <strong>{nextDifficulty}</strong> 난이도 문제 2개를 더 풀면
-                플래티넘 책벌레 배지에 도전할 수 있어요.
+                기본 문제를 모두 맞혔어요. 다음 난이도{" "}
+                <strong>{nextDifficultyText}</strong> 보너스 문제에 도전할 수 있어요.
               </p>
-
-              <div className="result-button-row">
-                <button className="result-button primary" onClick={handleTryExtra}>
-                  추가 문제 도전하기 →
-                </button>
-                <button className="result-button secondary" onClick={handleSkip}>
-                  독해력 성장 그래프 확인
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="result-info-box">
-              {difficulty === "상" && correctCount === 5 ? (
-                <p>
-                  최고 난이도에서 기본 5문제를 모두 맞혀서
-                  <strong> 기본 플래티넘 책벌레 배지</strong>를 받았어요.
-                </p>
-              ) : (
-                <p>이번 결과를 바탕으로 독해력 성장 그래프를 확인해보세요.</p>
-              )}
-
-              <div className="result-button-row">
-                <button className="result-button primary" onClick={handleSkip}>
-                  독해력 성장 그래프 확인 →
-                </button>
-              </div>
             </div>
           )}
 
-          <div className="result-button-row bottom">
-            <button className="result-button secondary" onClick={handleRestart}>
-              다시 풀기
-            </button>
+          <div className="result-button-row">
+            {hasBonus ? (
+              <>
+                <button className="result-button primary" onClick={handleTryExtra}>
+                  추가 문제 풀기 →
+                </button>
+                <button className="result-button secondary" onClick={handleGoReport}>
+                  마이레포트 가기
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  className="result-button secondary"
+                  onClick={() => navigate("/main")}
+                >
+                  홈으로
+                </button>
+                <button className="result-button primary" onClick={handleGoReport}>
+                  마이레포트 가기 →
+                </button>
+              </>
+            )}
           </div>
         </section>
       </main>
