@@ -47,7 +47,7 @@ export default function StoryReadPage() {
         setStory(normalizedStory);
 
         if (!normalizedStory.image) {
-          await generateStoryImage(normalizedStory.id);
+          generateStoryImage(normalizedStory.id);
         }
       } catch (err) {
         console.error(err);
