@@ -52,7 +52,7 @@ export default function JoinPage() {
   const [form, setForm] = useState({
     userId: "",
     password: "",
-    birth: "",
+    age: "",
   });
 
   const [selectedInterests, setSelectedInterests] = useState([]);
@@ -80,7 +80,7 @@ export default function JoinPage() {
   };
 
   const handleNextFromStep1 = () => {
-    if (!form.userId.trim() || !form.password.trim() || !form.birth) {
+    if (!form.userId.trim() || !form.password.trim() || !form.birth.trim()) {
       alert("아이디, 비밀번호, 생년월일을 입력해 주세요.");
       return;
     }
@@ -147,7 +147,7 @@ export default function JoinPage() {
             <div className="step-section">
               <h2>기본 정보를 알려주세요</h2>
               <p className="step-description">
-                아이디, 비밀번호, 생년월일을 입력해주세요
+                아이디, 비밀번호, 나이를 입력해주세요
               </p>
 
               <div className="input-group">
@@ -172,9 +172,10 @@ export default function JoinPage() {
 
               <div className="input-group">
                 <input
-                  type="date"
-                  name="birth"
-                  value={form.birth}
+                  type="text"
+                  name="age"
+                  placeholder="나이"
+                  value={form.age}
                   onChange={handleChange}
                 />
               </div>

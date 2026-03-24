@@ -113,7 +113,7 @@ export default function TestResultPage() {
             추천 동화 보러가기
           </button>
 
-          <button className="test-next-btn" onClick={() => navigate("/mypage")}>
+          <button className="test-next-btn" onClick={() => navigate("/myreport")}>
             마이페이지로 이동
           </button>
         </div>
