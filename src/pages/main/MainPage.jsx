@@ -1,5 +1,5 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
 import "./MainPage.css";
 
 const STORIES = [
@@ -104,7 +104,7 @@ export default function MainPage() {
                   className="hero-card-button"
                   onClick={() => navigate("/recommended")}
                 >
-                  AI 추천 동화 보러가기
+                  AI 추천 동화 바로 보러가기
                 </button>
               </div>
             </div>
@@ -117,7 +117,7 @@ export default function MainPage() {
           </div>
 
           <div className="quick-menu-grid">
-            <div className="quick-menu-card" onClick={() => navigate("/story")}>
+            <div className="quick-menu-card" onClick={() => navigate("/story/:id")}>
               <div className="quick-icon">📚</div>
               <h4>동화 읽기</h4>
               <p>재미있는 동화를 골라 읽어요</p>
@@ -132,7 +132,7 @@ export default function MainPage() {
               <p>아이 수준에 맞는 동화를 추천받아요</p>
             </div>
 
-            <div className="quick-menu-card" onClick={() => navigate("/liked")}>
+            <div className="quick-menu-card" onClick={() => navigate("/recommended")}>
               <div className="quick-icon">❤️</div>
               <h4>좋아요</h4>
               <p>마음에 든 동화를 다시 모아봐요</p>
