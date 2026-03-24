@@ -14,36 +14,40 @@ export default function StoryReadPage() {
   const [imageLoading, setImageLoading] = useState(false);
   const [imageError, setImageError] = useState(false);
 
+  const normalizeStory = (data, storyId) => ({
+    id: data.storyId ?? Number(storyId),
+    title: data.title ?? "제목 없음",
+    genre: data.genreName ?? data.genre ?? "미분류",
+    length: data.charCount ?? data.length ?? 0,
+    content: data.content ?? "동화 내용이 없습니다.",
+    image: data.aiImageUrl ?? data.imageUrl ?? "",
+  });
+
+  const fetchStoryDetailById = async (storyId) => {
+    const response = await fetch(buildApiUrl(`/story/${storyId}`), {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`동화 조회 실패: ${response.status}`);
+    }
+
+    const result = await response.json();
+    const data = result?.data ?? result;
+    return normalizeStory(data, storyId);
+  };
+
   useEffect(() => {
-    async function fetchStoryDetail() {
+    async function loadStory() {
       try {
         setLoading(true);
         setError("");
         setImageError(false);
 
-        const response = await fetch(buildApiUrl(`/story/${id}`), {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`동화 조회 실패: ${response.status}`);
-        }
-
-        const result = await response.json();
-        const data = result?.data ?? result;
-
-        const normalizedStory = {
-          id: data.storyId ?? Number(id),
-          title: data.title ?? "제목 없음",
-          genre: data.genreName ?? data.genre ?? "미분류",
-          length: data.charCount ?? data.length ?? 0,
-          content: data.content ?? "동화 내용이 없습니다.",
-          image: data.aiImageUrl ?? data.imageUrl ?? "",
-        };
-
+        const normalizedStory = await fetchStoryDetailById(id);
         setStory(normalizedStory);
 
         if (!normalizedStory.image) {
@@ -57,54 +61,59 @@ export default function StoryReadPage() {
       }
     }
 
-    async function generateStoryImage(storyId) {
-      try {
-        setImageLoading(true);
-        setImageError(false);
-
-        const response = await fetch(buildApiUrl(`/story/${storyId}/ai-image`), {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            style: "fairy-tale",
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`이미지 생성 실패: ${response.status}`);
-        }
-
-        const result = await response.json();
-        const data = result?.data ?? result;
-
-        const generatedImageUrl = data?.imageUrl ?? "";
-
-        if (generatedImageUrl) {
-          setStory((prev) =>
-            prev
-              ? {
-                  ...prev,
-                  image: generatedImageUrl,
-                }
-              : prev
-          );
-        } else {
-          setImageError(true);
-        }
-      } catch (err) {
-        console.error(err);
-        setImageError(true);
-      } finally {
-        setImageLoading(false);
-      }
-    }
-
     if (id) {
-      fetchStoryDetail();
+      loadStory();
     }
   }, [id]);
+
+  const generateStoryImage = async (storyId) => {
+    try {
+      setImageLoading(true);
+      setImageError(false);
+
+      const response = await fetch(buildApiUrl(`/story/${storyId}/ai-image`), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          style: "fairy-tale",
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`이미지 생성 실패: ${response.status}`);
+      }
+
+      const result = await response.json();
+      const data = result?.data ?? result;
+      const generatedImageUrl = data?.imageUrl ?? "";
+
+      if (generatedImageUrl) {
+        setStory((prev) =>
+          prev
+            ? {
+                ...prev,
+                image: generatedImageUrl,
+              }
+            : prev
+        );
+        return;
+      }
+
+      const refreshedStory = await fetchStoryDetailById(storyId);
+      if (refreshedStory.image) {
+        setStory(refreshedStory);
+      } else {
+        setImageError(true);
+      }
+    } catch (err) {
+      console.error(err);
+      setImageError(true);
+    } finally {
+      setImageLoading(false);
+    }
+  };
 
   const storyPages = useMemo(() => {
     if (!story?.content) {
@@ -206,18 +215,12 @@ export default function StoryReadPage() {
 
             <div className="story-image-block">
               <div className="story-image-frame">
-                {hasImage ? (
                   <img
                     src={story.image}
                     alt={story.title}
                     className="story-image"
                     onError={() => setImageError(true)}
                   />
-                ) : (
-                  <div className="story-image-placeholder">
-                    {imageLoading ? "AI 이미지 생성 중이에요..." : "AI 이미지가 아직 없어요"}
-                  </div>
-                )}
               </div>
               <p className="story-image-caption">
                 {hasImage
