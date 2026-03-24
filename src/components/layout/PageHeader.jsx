@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import BackendStatusBadge from "../common/BackendStatusBadge";
 import "./PageHeader.css";
 
 export default function PageHeader() {
@@ -75,6 +76,7 @@ export default function PageHeader() {
         </button>
 
         <div className="page-header-right">
+          <BackendStatusBadge />
           <button
             type="button"
             className="page-header-logout-btn"

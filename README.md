@@ -14,3 +14,25 @@ The React Compiler is not enabled on this template because of its impact on dev 
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+## Basic FE-BE Connection
+
+- Dev server port is fixed to `3000` in `vite.config.js`.
+- Backend base URL is controlled by `.env`.
+- Basic connectivity check uses `GET /actuator/health`.
+
+### Environment Variables
+
+Copy `.env.example` to `.env` and edit values if needed.
+
+```env
+VITE_API_BASE_URL=http://localhost:8080
+VITE_API_TIMEOUT_MS=10000
+```
+
+### Added Common Modules
+
+- `src/config/api.js`: base URL and URL builder
+- `src/services/httpClient.js`: common HTTP request utility
+- `src/services/systemService.js`: backend health check API
+- `src/components/common/BackendStatusBadge.jsx`: connection status badge

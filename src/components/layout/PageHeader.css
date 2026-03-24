@@ -110,6 +110,9 @@
 
 /* 오른쪽 로그아웃 */
 .page-header-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   justify-self: end;
 }
 
@@ -222,6 +225,10 @@
   .page-header-menu-btn,
   .page-header-logout-btn {
     padding: 8px;
+  }
+
+  .page-header-right {
+    gap: 6px;
   }
 
   .page-header-dropdown {

@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import BackendStatusBadge from "../common/BackendStatusBadge";
 import "./Header.css";
 
 
@@ -19,6 +20,10 @@ export default function Header() {
             아이<span className="simple-logo-ai">(AI)</span> 동화
           </span>
         </button>
+
+        <div className="simple-header-status">
+          <BackendStatusBadge />
+        </div>
       </div>
     </header>
   );
