@@ -5,63 +5,95 @@ import "./RecommendedPage.css";
 
 export default function RecommendedPage() {
   const navigate = useNavigate();
-  const [books, setBooks] = useState([]);
+
+  const [recommendedBooks, setRecommendedBooks] = useState([]);
+  const [allBooks, setAllBooks] = useState([]);
+  const [likedBookIds, setLikedBookIds] = useState([]);
   const [activeMenu, setActiveMenu] = useState("recommended");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
   const storedUserId = localStorage.getItem("userId") || "1";
 
   useEffect(() => {
-    async function fetchRecommendations() {
+    async function fetchBooks() {
       try {
         setLoading(true);
         setError("");
 
-        const response = await fetch(
-          buildApiUrl(`/api/v1/recommendations/users/${storedUserId}?size=3&refresh=false`),
-          {
+        if (activeMenu === "recommended") {
+          const response = await fetch(
+            buildApiUrl(`/api/v1/recommendations/users/${storedUserId}?size=3&refresh=false`),
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(`추천 조회 실패: ${response.status}`);
+          }
+
+          const result = await response.json();
+          const recommendationData = result?.data?.recommendations ?? [];
+
+          const mappedBooks = recommendationData.map((item) => ({
+            id: item.storyId,
+            title: item.title,
+            description: item.reason,
+            level: item.basedDifficulty ?? `레벨 ${item.basedLevel}`,
+            cover: "📖",
+            recommended: true,
+          }));
+
+          setRecommendedBooks(mappedBooks);
+        }
+
+        if (activeMenu === "all") {
+          const response = await fetch(buildApiUrl("/story"), {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
             },
+          });
+
+          if (!response.ok) {
+            throw new Error(`전체 책 조회 실패: ${response.status}`);
           }
-        );
 
-        if (!response.ok) {
-          throw new Error(`추천 조회 실패: ${response.status}`);
+          const result = await response.json();
+          const storyData = result?.data ?? result ?? [];
+
+          const mappedBooks = storyData.map((item) => ({
+            id: item.storyId,
+            title: item.title,
+            description: item.content ?? "동화 설명이 없습니다.",
+            level: item.charCount ?? item.length ?? 0,
+            cover: "📖",
+            recommended: false,
+          }));
+
+          setAllBooks(mappedBooks);
         }
-
-        const result = await response.json();
-        const recommendationData = result?.data?.recommendations ?? [];
-
-        const mappedBooks = recommendationData.map((item) => ({
-          id: item.storyId,
-          title: item.title,
-          description: item.reason,
-          level: item.basedDifficulty ?? `레벨 ${item.basedLevel}`,
-          liked: false,
-          cover: "📖",
-          recommended: true,
-        }));
-
-        setBooks(mappedBooks);
       } catch (err) {
         console.error(err);
-        setError("추천 동화를 불러오지 못했어요.");
+        setError("책 목록을 불러오지 못했어요.");
       } finally {
         setLoading(false);
       }
     }
 
-    fetchRecommendations();
-  }, []);
+    fetchBooks();
+  }, [activeMenu, storedUserId]);
 
   const handleToggleLike = (id) => {
-    setBooks((prev) =>
-      prev.map((book) =>
-        book.id === id ? { ...book, liked: !book.liked } : book
-      )
+    setLikedBookIds((prev) =>
+      prev.includes(id)
+        ? prev.filter((bookId) => bookId !== id)
+        : [...prev, id]
     );
   };
 
@@ -69,28 +101,38 @@ export default function RecommendedPage() {
     navigate(`/story/${book.id}`);
   };
 
-  const searchedBooks = useMemo(() => {
-    const keyword = search.trim().toLowerCase();
+  const mergedBooks = useMemo(() => {
+    const merged = [...recommendedBooks, ...allBooks];
 
-    if (!keyword) return books;
-
-    return books.filter((book) =>
-      book.title.toLowerCase().includes(keyword)
+    return merged.filter(
+      (book, index, arr) => arr.findIndex((item) => item.id === book.id) === index
     );
-  }, [books, search]);
+  }, [recommendedBooks, allBooks]);
 
-  const visibleBooks = useMemo(() => {
+  const currentBooks = useMemo(() => {
     switch (activeMenu) {
       case "recommended":
-        return searchedBooks.filter((book) => book.recommended);
+        return recommendedBooks;
       case "all":
-        return searchedBooks;
+        return allBooks;
       case "likes":
-        return searchedBooks.filter((book) => book.liked);
+        return mergedBooks.filter((book) => likedBookIds.includes(book.id));
       default:
         return [];
     }
-  }, [activeMenu, searchedBooks]);
+  }, [activeMenu, recommendedBooks, allBooks, mergedBooks, likedBookIds]);
+
+  const searchedBooks = useMemo(() => {
+    const keyword = search.trim().toLowerCase();
+
+    if (!keyword) {
+      return currentBooks;
+    }
+
+    return currentBooks.filter((book) =>
+      String(book.title).toLowerCase().includes(keyword)
+    );
+  }, [currentBooks, search]);
 
   const pageInfo = useMemo(() => {
     switch (activeMenu) {
@@ -102,7 +144,7 @@ export default function RecommendedPage() {
       case "all":
         return {
           title: "모든 책",
-          subtitle: "현재 불러온 추천 동화 목록이에요.",
+          subtitle: "등록된 전체 동화 목록이에요.",
         };
       case "likes":
         return {
@@ -179,13 +221,13 @@ export default function RecommendedPage() {
           </div>
 
           {loading ? (
-            <div className="empty-state">추천 동화를 불러오는 중이에요.</div>
+            <div className="empty-state">책 목록을 불러오는 중이에요.</div>
           ) : error ? (
             <div className="empty-state">{error}</div>
           ) : (
             <div className="books-grid">
-              {visibleBooks.length > 0 ? (
-                visibleBooks.map((book) => (
+              {searchedBooks.length > 0 ? (
+                searchedBooks.map((book) => (
                   <article className="book-list-card" key={book.id}>
                     <div className="book-cover-box">
                       <div className="book-cover-emoji">{book.cover}</div>
@@ -202,11 +244,11 @@ export default function RecommendedPage() {
 
                         <button
                           type="button"
-                          className={`book-like-btn ${book.liked ? "active" : ""}`}
+                          className={`book-like-btn ${likedBookIds.includes(book.id) ? "active" : ""}`}
                           onClick={() => handleToggleLike(book.id)}
                           aria-label="좋아요"
                         >
-                          {book.liked ? "❤️" : "🤍"}
+                          {likedBookIds.includes(book.id) ? "❤️" : "🤍"}
                         </button>
                       </div>
 
@@ -225,9 +267,7 @@ export default function RecommendedPage() {
                   </article>
                 ))
               ) : (
-                <div className="empty-state">
-                  조건에 맞는 동화가 없어요.
-                </div>
+                <div className="empty-state">조건에 맞는 동화가 없어요.</div>
               )}
             </div>
           )}
