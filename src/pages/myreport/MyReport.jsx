@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   ResponsiveContainer,
   Bar,
@@ -12,54 +11,36 @@ import {
 import { get } from "../../services/httpClient";
 import "./MyReport.css";
 
+function getStoredUser() {
+  const storedUserId = localStorage.getItem("userId");
+  const storedUserName = localStorage.getItem("userName");
+  const storedUserAge = localStorage.getItem("userAge");
+  const storedUserTier = localStorage.getItem("userTier");
+
+  return {
+    userId: storedUserId ? Number(storedUserId) : null,
+    name: storedUserName || "사용자",
+    age: storedUserAge ? Number(storedUserAge) : null,
+    tier: storedUserTier || "학습자",
+  };
+}
+
 export default function MyReport() {
-  const navigate = useNavigate();
-
-  const user = useMemo(
-    () => ({
-      userId: 1,
-      name: "chaelyn",
-      age: 9,
-      tier: "중급",
-    }),
-    []
-  );
-
-  const level = 1;
-  const progress = 60;
+  const user = useMemo(() => getStoredUser(), []);
 
   const [chartData, setChartData] = useState([]);
   const [accuracy, setAccuracy] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const pendingQuiz = [
-    { id: 1, title: "빨간 모자", desc: "읽기 완료 · 퀴즈 미완료" },
-    { id: 2, title: "헨젤과 그레텔", desc: "읽는 중 · 퀴즈 대기" },
-    { id: 3, title: "아기 돼지 삼형제", desc: "추천 퀴즈" },
-  ];
-
-  const completedQuiz = [
-    { id: 1, title: "백설공주", score: "90점" },
-    { id: 2, title: "신데렐라", score: "100점" },
-    { id: 3, title: "토끼와 거북이", score: "85점" },
-  ];
-
-  const readBooks = [
-    { id: 1, title: "백설공주", genre: "공주 / 판타지" },
-    { id: 2, title: "토끼와 거북이", genre: "우화" },
-    { id: 3, title: "피노키오", genre: "모험" },
-    { id: 4, title: "엄지공주", genre: "판타지" },
-  ];
-
-  const likedBooks = [
-    { id: 1, title: "미운 오리 새끼", genre: "성장" },
-    { id: 2, title: "흥부와 놀부", genre: "전래" },
-    { id: 3, title: "해님 달님", genre: "전래" },
-  ];
-
   useEffect(() => {
     async function fetchAnalytics() {
+      if (!user.userId) {
+        setError("사용자 정보가 없어요. 다시 로그인해 주세요.");
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
         setError("");
@@ -122,8 +103,9 @@ export default function MyReport() {
     fetchAnalytics();
   }, [user.userId]);
 
-  const bestScore = Math.max(...chartData.map((d) => d.score), 0);
   const totalDays = chartData.length;
+  const bestScore = Math.max(...chartData.map((d) => d.score), 0);
+  const totalQuizCount = chartData.reduce((sum, item) => sum + item.quizCount, 0);
   const latest = chartData[chartData.length - 1]?.score || 0;
   const accuracyPercent = accuracy
     ? ((accuracy.accuracy ?? 0) * 100).toFixed(1)
@@ -144,22 +126,12 @@ export default function MyReport() {
             <div className="mypage-profile-text">
               <div className="name-row">
                 <h2 className="profile-name">{user.name}</h2>
-                <span className="profile-age">{user.age}세</span>
+                {user.age && <span className="profile-age">{user.age}세</span>}
               </div>
 
               <div className="mypage-level-box">
                 <div className="level-top">
-                  <span className="level-text">
-                    Lv. {level} {user.tier}
-                  </span>
-                  <span className="level-percent">{progress}%</span>
-                </div>
-
-                <div className="level-bar">
-                  <div
-                    className="level-bar-fill"
-                    style={{ width: `${progress}%` }}
-                  />
+                  <span className="level-text">{user.tier}</span>
                 </div>
               </div>
             </div>
@@ -167,16 +139,16 @@ export default function MyReport() {
 
           <div className="mypage-stats">
             <div className="stat-box">
-              <strong>{readBooks.length}</strong>
-              <span>읽은 책</span>
+              <strong>{totalDays}</strong>
+              <span>학습일</span>
             </div>
             <div className="stat-box">
-              <strong>{completedQuiz.length}</strong>
-              <span>완료한 퀴즈</span>
+              <strong>{totalQuizCount}</strong>
+              <span>전체 퀴즈 수</span>
             </div>
             <div className="stat-box">
-              <strong>{likedBooks.length}</strong>
-              <span>좋아요</span>
+              <strong>{accuracyPercent}%</strong>
+              <span>정확도</span>
             </div>
           </div>
         </section>
@@ -191,7 +163,7 @@ export default function MyReport() {
             </div>
           </div>
 
-          {accuracy && (
+          {!loading && !error && (
             <div className="report-summary-row">
               <div className="report-summary-box">
                 <span className="report-summary-icon">📅</span>
