@@ -11,7 +11,6 @@ import TestPage from "./pages/test/TestPage";
 import TestResultPage from "./pages/test/TestResultPage";
 
 import MainPage from "./pages/main/MainPage";
-import MyPage from "./pages/mypage/MyPage";
 
 import StoryReadPage from "./pages/story/StoryReadPage";
 
@@ -21,7 +20,6 @@ import QuizIntroPage from "./pages/quiz/QuizIntroPage";
 import QuizPage from "./pages/quiz/QuizPage";
 import QuizResult from "./pages/quiz/QuizResult";
 
-import ReportPage from "./pages/report/ReportPage";
 import MyReport from "./pages/myreport/MyReport";
 
 
@@ -42,8 +40,6 @@ export default function App() {
 
           <Route path="/story/:id" element={<StoryReadPage />} />
 
-          <Route path="/mypage" element={<MyPage />} />
-
           <Route path="*" element={<Navigate to="/" replace />} />
   
           <Route path="/main" element={<MainPage />} />
@@ -54,8 +50,6 @@ export default function App() {
           <Route path="/quiz/result" element={<QuizResult />} />
           <Route path="/quiz/extra/:id" element={<QuizExtraPage />} />
           <Route path="/quiz/extra/result" element={<QuizFinalResult />} />
-
-          <Route path="/report" element={<ReportPage />} />
 
           <Route path="/myreport" element={<MyReport />} />
 
