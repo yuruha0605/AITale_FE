@@ -1,126 +1,138 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { buildApiUrl } from "../../config/api";
 import "./RecommendedPage.css";
-
-const initialBooks = [
-  {
-    id: 1,
-    title: "별을 따라간 토끼",
-    description: "호기심 많은 토끼가 반짝이는 별빛을 따라 숲속 모험을 떠나는 이야기예요.",
-    level: "쉬움",
-    liked: false,
-    cover: "🐰",
-    recommended: true,
-  },
-  {
-    id: 2,
-    title: "구름 빵집의 비밀",
-    description: "하늘을 나는 빵을 만드는 구름 빵집에서 벌어지는 따뜻한 하루를 담았어요.",
-    level: "보통",
-    liked: false,
-    cover: "☁️",
-    recommended: true,
-  },
-  {
-    id: 3,
-    title: "바다 마을의 작은 인어",
-    description: "용기와 우정을 배우는 작은 인어의 반짝이는 바다 이야기예요.",
-    level: "쉬움",
-    liked: false,
-    cover: "🧜‍♀️",
-    recommended: true,
-  },
-  {
-    id: 4,
-    title: "달님 우체통",
-    description: "소원을 적은 편지가 달님에게 닿으며 펼쳐지는 포근한 동화예요.",
-    level: "보통",
-    liked: true,
-    cover: "🌙",
-    recommended: true,
-  },
-  {
-    id: 5,
-    title: "숲속 음악회",
-    description: "동물 친구들이 함께 준비한 특별한 음악회 속에서 협동심을 배워요.",
-    level: "쉬움",
-    liked: false,
-    cover: "🎵",
-    recommended: false,
-  },
-  {
-    id: 6,
-    title: "마법 연필의 하루",
-    description: "그림이 현실이 되는 신비한 연필과 함께 상상력이 펼쳐지는 이야기예요.",
-    level: "조금 어려움",
-    liked: true,
-    cover: "✏️",
-    recommended: false,
-  },
-  {
-    id: 7,
-    title: "토끼와 거북이",
-    description: "느려도 끝까지 포기하지 않는 마음을 배우는 이야기예요.",
-    level: "쉬움",
-    liked: false,
-    cover: "🐢",
-    recommended: false,
-  },
-  {
-    id: 8,
-    title: "피노키오의 모험",
-    description: "진실과 용기의 소중함을 알려주는 클래식 동화예요.",
-    level: "보통",
-    liked: false,
-    cover: "🤥",
-    recommended: false,
-  },
-];
 
 export default function RecommendedPage() {
   const navigate = useNavigate();
-  const [books, setBooks] = useState(initialBooks);
+
+  const [recommendedBooks, setRecommendedBooks] = useState([]);
+  const [allBooks, setAllBooks] = useState([]);
+  const [likedBookIds, setLikedBookIds] = useState([]);
   const [activeMenu, setActiveMenu] = useState("recommended");
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const storedUserId = localStorage.getItem("userId") || "1";
+
+  useEffect(() => {
+    async function fetchBooks() {
+      try {
+        setLoading(true);
+        setError("");
+
+        if (activeMenu === "recommended") {
+          const response = await fetch(
+            buildApiUrl(`/api/v1/recommendations/users/${storedUserId}?size=3&refresh=false`),
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(`추천 조회 실패: ${response.status}`);
+          }
+
+          const result = await response.json();
+          const recommendationData = result?.data?.recommendations ?? [];
+
+          const mappedBooks = recommendationData.map((item) => ({
+            id: item.storyId,
+            title: item.title,
+            description: item.reason,
+            level: item.basedDifficulty ?? `레벨 ${item.basedLevel}`,
+            cover: "📖",
+            recommended: true,
+          }));
+
+          setRecommendedBooks(mappedBooks);
+        }
+
+        if (activeMenu === "all") {
+          const response = await fetch(buildApiUrl("/story"), {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error(`전체 책 조회 실패: ${response.status}`);
+          }
+
+          const result = await response.json();
+          const storyData = result?.data ?? result ?? [];
+
+          const mappedBooks = storyData.map((item) => ({
+            id: item.storyId,
+            title: item.title,
+            description: item.content ?? "동화 설명이 없습니다.",
+            level: item.charCount ?? item.length ?? 0,
+            cover: "📖",
+            recommended: false,
+          }));
+
+          setAllBooks(mappedBooks);
+        }
+      } catch (err) {
+        console.error(err);
+        setError("책 목록을 불러오지 못했어요.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchBooks();
+  }, [activeMenu, storedUserId]);
 
   const handleToggleLike = (id) => {
-    setBooks((prev) =>
-      prev.map((book) =>
-        book.id === id ? { ...book, liked: !book.liked } : book
-      )
+    setLikedBookIds((prev) =>
+      prev.includes(id)
+        ? prev.filter((bookId) => bookId !== id)
+        : [...prev, id]
     );
   };
 
   const handleReadBook = (book) => {
-    if (book.id === 1) {
-      navigate(`/story/${book.id}`);
-    } else {
-      alert("이 동화는 아직 준비 중이에요!");
-    }
+    navigate(`/story/${book.id}`);
   };
+
+  const mergedBooks = useMemo(() => {
+    const merged = [...recommendedBooks, ...allBooks];
+
+    return merged.filter(
+      (book, index, arr) => arr.findIndex((item) => item.id === book.id) === index
+    );
+  }, [recommendedBooks, allBooks]);
+
+  const currentBooks = useMemo(() => {
+    switch (activeMenu) {
+      case "recommended":
+        return recommendedBooks;
+      case "all":
+        return allBooks;
+      case "likes":
+        return mergedBooks.filter((book) => likedBookIds.includes(book.id));
+      default:
+        return [];
+    }
+  }, [activeMenu, recommendedBooks, allBooks, mergedBooks, likedBookIds]);
 
   const searchedBooks = useMemo(() => {
     const keyword = search.trim().toLowerCase();
 
-    if (!keyword) return books;
-
-    return books.filter((book) =>
-      book.title.toLowerCase().includes(keyword)
-    );
-  }, [books, search]);
-
-  const visibleBooks = useMemo(() => {
-    switch (activeMenu) {
-      case "recommended":
-        return searchedBooks.filter((book) => book.recommended);
-      case "all":
-        return searchedBooks;
-      case "likes":
-        return searchedBooks.filter((book) => book.liked);
-      default:
-        return [];
+    if (!keyword) {
+      return currentBooks;
     }
-  }, [activeMenu, searchedBooks]);
+
+    return currentBooks.filter((book) =>
+      String(book.title).toLowerCase().includes(keyword)
+    );
+  }, [currentBooks, search]);
 
   const pageInfo = useMemo(() => {
     switch (activeMenu) {
@@ -132,7 +144,7 @@ export default function RecommendedPage() {
       case "all":
         return {
           title: "모든 책",
-          subtitle: "현재 서비스에서 볼 수 있는 전체 동화 목록이에요.",
+          subtitle: "등록된 전체 동화 목록이에요.",
         };
       case "likes":
         return {
@@ -175,13 +187,13 @@ export default function RecommendedPage() {
             className={`books-nav-item ${activeMenu === "likes" ? "active" : ""}`}
             onClick={() => setActiveMenu("likes")}
           >
-            <span>🤍</span>
+            <span>❤️</span>
             좋아요 누른 책
           </button>
 
           <button
             className="books-nav-item"
-            onClick={() => navigate("/myrepo")}
+            onClick={() => navigate("/myreport")}
           >
             <span>👤</span>
             마이페이지
@@ -208,53 +220,57 @@ export default function RecommendedPage() {
             <p>{pageInfo.subtitle}</p>
           </div>
 
-          <div className="books-grid">
-            {visibleBooks.length > 0 ? (
-              visibleBooks.map((book) => (
-                <article className="book-list-card" key={book.id}>
-                  <div className="book-cover-box">
-                    <div className="book-cover-emoji">{book.cover}</div>
-                  </div>
+          {loading ? (
+            <div className="empty-state">책 목록을 불러오는 중이에요.</div>
+          ) : error ? (
+            <div className="empty-state">{error}</div>
+          ) : (
+            <div className="books-grid">
+              {searchedBooks.length > 0 ? (
+                searchedBooks.map((book) => (
+                  <article className="book-list-card" key={book.id}>
+                    <div className="book-cover-box">
+                      <div className="book-cover-emoji">{book.cover}</div>
+                    </div>
 
-                  <div className="book-list-body">
-                    <div className="book-list-top">
-                      <div className="book-title-row">
-                        <h3>{book.title}</h3>
-                        <span className={`level-chip ${book.level.replace(/\s/g, "")}`}>
-                          {book.level}
-                        </span>
+                    <div className="book-list-body">
+                      <div className="book-list-top">
+                        <div className="book-title-row">
+                          <h3>{book.title}</h3>
+                          <span className={`level-chip ${String(book.level).replace(/\s/g, "")}`}>
+                            {book.level}
+                          </span>
+                        </div>
+
+                        <button
+                          type="button"
+                          className={`book-like-btn ${likedBookIds.includes(book.id) ? "active" : ""}`}
+                          onClick={() => handleToggleLike(book.id)}
+                          aria-label="좋아요"
+                        >
+                          {likedBookIds.includes(book.id) ? "❤️" : "🤍"}
+                        </button>
                       </div>
 
-                      <button
-                        type="button"
-                        className={`book-like-btn ${book.liked ? "active" : ""}`}
-                        onClick={() => handleToggleLike(book.id)}
-                        aria-label="좋아요"
-                      >
-                        {book.liked ? "❤️" : "🤍"}
-                      </button>
-                    </div>
+                      <p className="book-description">{book.description}</p>
 
-                    <p className="book-description">{book.description}</p>
-
-                    <div className="book-action-row">
-                      <button
-                        type="button"
-                        className="read-more-btn"
-                        onClick={() => handleReadBook(book)}
-                      >
-                        읽으러 가기
-                      </button>
+                      <div className="book-action-row">
+                        <button
+                          type="button"
+                          className="read-more-btn"
+                          onClick={() => handleReadBook(book)}
+                        >
+                          읽으러 가기
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                </article>
-              ))
-            ) : (
-              <div className="empty-state">
-                조건에 맞는 동화가 없어요.
-              </div>
-            )}
-          </div>
+                  </article>
+                ))
+              ) : (
+                <div className="empty-state">조건에 맞는 동화가 없어요.</div>
+              )}
+            </div>
+          )}
         </section>
       </main>
     </div>

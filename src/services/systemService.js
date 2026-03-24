@@ -1,11 +1,15 @@
-import { get } from "./httpClient";
+import { buildApiUrl } from "../config/api";
 
 export async function checkBackendHealth() {
-  const response = await get("/actuator/health", { useAuth: false });
-  const status = response?.data?.status;
+  const response = await fetch(buildApiUrl("/actuator/health"), {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 
   return {
-    ok: String(status || "").toUpperCase() === "UP",
-    status: status || "UNKNOWN",
+    ok: response.ok,
+    status: response.status,
   };
 }
