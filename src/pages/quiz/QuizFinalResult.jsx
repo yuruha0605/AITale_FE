@@ -209,7 +209,7 @@ export default function QuizFinalResult() {
           <div className="final-button-row">
             <button
               className="final-button primary"
-              onClick={() => navigate("/report")}
+              onClick={() => navigate("/myreport")}
             >
               학습 레포트 보기 →
             </button>
