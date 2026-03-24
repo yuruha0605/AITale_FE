@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "./QuizExtraPage.css";
 
-const BASE_URL = "http://localhost:8080";
+const BASE_URL =
+  import.meta.env.VITE_LEARNING_API_BASE_URL || "http://localhost:8083";
 
 const REVERSE_DIFFICULTY_MAP = {
   EASY: "하",
@@ -23,7 +24,6 @@ export default function QuizExtraPage() {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [showSaved, setShowSaved] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
@@ -46,9 +46,7 @@ export default function QuizExtraPage() {
           `${BASE_URL}/story_quiz/bonus?storyId=${storyId}&nextDifficulty=${extraDifficulty}`
         );
 
-        if (!res.ok) {
-          throw new Error("보너스 문제 조회 실패");
-        }
+        if (!res.ok) throw new Error("보너스 문제 조회 실패");
 
         const data = await res.json();
         setQuestions(Array.isArray(data) ? data : []);
@@ -67,7 +65,7 @@ export default function QuizExtraPage() {
     const saved = JSON.parse(localStorage.getItem("bonusAnswers") || "[]");
     const current = saved[questionIndex];
 
-    setSelectedIndex(typeof current?.answer === "number" ? current.answer : null);
+    setSelectedIndex(typeof current?.selectedIndex === "number" ? current.selectedIndex : null);
     setShowSaved(false);
     setShowAlert(false);
   }, [questionIndex]);
@@ -84,7 +82,8 @@ export default function QuizExtraPage() {
 
     saved[questionIndex] = {
       questionId: question.id,
-      answer: selectedIndex,
+      selectedIndex,
+      answer: selectedIndex + 1,
     };
 
     localStorage.setItem("bonusAnswers", JSON.stringify(saved));
@@ -119,9 +118,7 @@ export default function QuizExtraPage() {
           }),
         });
 
-        if (!res.ok) {
-          throw new Error("보너스 문제 제출 실패");
-        }
+        if (!res.ok) throw new Error("보너스 문제 제출 실패");
 
         const bonusResult = await res.json();
         localStorage.setItem("quizBonusSubmitResult", JSON.stringify(bonusResult));
@@ -148,7 +145,6 @@ export default function QuizExtraPage() {
           <div className="extra-bg-cloud cloud-3" />
           <div className="extra-bg-hill" />
         </div>
-
         <main className="extra-content">
           <section className="extra-shell">
             <div className="extra-card empty">
@@ -169,7 +165,6 @@ export default function QuizExtraPage() {
           <div className="extra-bg-cloud cloud-3" />
           <div className="extra-bg-hill" />
         </div>
-
         <main className="extra-content">
           <section className="extra-shell">
             <div className="extra-card empty">

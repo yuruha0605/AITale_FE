@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "./QuizPage.css";
 
-const BASE_URL = "http://localhost:8080";
+const BASE_URL =
+  import.meta.env.VITE_LEARNING_API_BASE_URL || "http://localhost:8083";
 
 const DIFFICULTY_MAP = {
   하: "EASY",
@@ -26,7 +27,6 @@ export default function QuizPage() {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [showSaved, setShowSaved] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
@@ -46,14 +46,11 @@ export default function QuizPage() {
         setLoading(true);
 
         const backendDifficulty = DIFFICULTY_MAP[difficulty] || "NORMAL";
-
         const res = await fetch(
           `${BASE_URL}/story_quiz?storyId=${storyId}&difficulty=${backendDifficulty}`
         );
 
-        if (!res.ok) {
-          throw new Error("기본 문제 조회 실패");
-        }
+        if (!res.ok) throw new Error("기본 문제 조회 실패");
 
         const data = await res.json();
         setQuestions(Array.isArray(data) ? data : []);
@@ -72,7 +69,7 @@ export default function QuizPage() {
     const saved = JSON.parse(localStorage.getItem("quizAnswers") || "[]");
     const current = saved[questionIndex];
 
-    setSelectedIndex(typeof current?.answer === "number" ? current.answer : null);
+    setSelectedIndex(typeof current?.selectedIndex === "number" ? current.selectedIndex : null);
     setShowSaved(false);
     setShowAlert(false);
   }, [questionIndex]);
@@ -89,7 +86,8 @@ export default function QuizPage() {
 
     saved[questionIndex] = {
       questionId: question.id,
-      answer: selectedIndex,
+      selectedIndex,
+      answer: selectedIndex + 1,
     };
 
     localStorage.setItem("quizAnswers", JSON.stringify(saved));
@@ -123,9 +121,7 @@ export default function QuizPage() {
           }),
         });
 
-        if (!res.ok) {
-          throw new Error("기본 문제 제출 실패");
-        }
+        if (!res.ok) throw new Error("기본 문제 제출 실패");
 
         const submitResult = await res.json();
         localStorage.setItem("quizSubmitResult", JSON.stringify(submitResult));
@@ -156,7 +152,6 @@ export default function QuizPage() {
           <div className="quiz-bg-cloud cloud-3" />
           <div className="quiz-bg-hill" />
         </div>
-
         <main className="quiz-content">
           <section className="quiz-shell">
             <div className="quiz-card empty">
@@ -177,7 +172,6 @@ export default function QuizPage() {
           <div className="quiz-bg-cloud cloud-3" />
           <div className="quiz-bg-hill" />
         </div>
-
         <main className="quiz-content">
           <section className="quiz-shell">
             <div className="quiz-card empty">
@@ -215,7 +209,6 @@ export default function QuizPage() {
                 <div className="quiz-service-badge">✨ 아이(AI)동화</div>
                 <h1 className="quiz-title">동화 퀴즈</h1>
               </div>
-
               <div className="quiz-header-right">
                 <span className="quiz-chip">난이도 {difficulty}</span>
                 <span className="quiz-chip">기본 문제</span>

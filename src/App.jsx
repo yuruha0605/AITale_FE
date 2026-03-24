@@ -103,6 +103,14 @@ export default function App() {
             }
           />
           <Route
+            path="/quiz/explanation"
+            element={
+              <ProtectedRoute>
+                <QuizExplanationPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/quiz/result"
             element={
               <ProtectedRoute>
