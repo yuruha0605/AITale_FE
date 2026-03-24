@@ -19,6 +19,8 @@ import QuizFinalResult from "./pages/quiz/QuizFinalResult";
 import QuizIntroPage from "./pages/quiz/QuizIntroPage";
 import QuizPage from "./pages/quiz/QuizPage";
 import QuizResult from "./pages/quiz/QuizResult";
+import QuizExplanationPage from "./pages/quiz/QuizExplanationPage";
+
 
 import MyReport from "./pages/myreport/MyReport";
 

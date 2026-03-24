@@ -1,12 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import quizQuestions from "../../data/quizQuestions";
 import "./QuizPage.css";
 
-const SCORE_BY_DIFFICULTY = {
-  하: 1,
-  중: 2,
-  상: 3,
+const BASE_URL = "http://localhost:8080";
+
+const DIFFICULTY_MAP = {
+  하: "EASY",
+  중: "NORMAL",
+  상: "HARD",
 };
 
 export default function QuizPage() {
@@ -19,77 +20,153 @@ export default function QuizPage() {
     localStorage.getItem("difficulty") ||
     "중";
 
-  const questions = useMemo(() => {
-    return quizQuestions.filter((q) => q.difficulty === difficulty).slice(0, 5);
-  }, [difficulty]);
+  const storyId = localStorage.getItem("storyId");
+  const userId = localStorage.getItem("userId");
 
-  const question = questions[questionIndex];
-  const scorePerQuestion = SCORE_BY_DIFFICULTY[difficulty] || 1;
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   const [selectedIndex, setSelectedIndex] = useState(null);
-  const [showResult, setShowResult] = useState(false);
+  const [showSaved, setShowSaved] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
-  const [aiExplanation, setAiExplanation] = useState("");
-  const [loadingAi, setLoadingAi] = useState(false);
+
+  const question = questions[questionIndex];
+  const progressPercent =
+    questions.length > 0 ? ((questionIndex + 1) / questions.length) * 100 : 0;
 
   useEffect(() => {
-    setSelectedIndex(null);
-    setShowResult(false);
+    const fetchQuestions = async () => {
+      if (!storyId) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+
+        const backendDifficulty = DIFFICULTY_MAP[difficulty] || "NORMAL";
+
+        const res = await fetch(
+          `${BASE_URL}/story_quiz?storyId=${storyId}&difficulty=${backendDifficulty}`
+        );
+
+        if (!res.ok) {
+          throw new Error("기본 문제 조회 실패");
+        }
+
+        const data = await res.json();
+        setQuestions(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error(error);
+        setQuestions([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQuestions();
+  }, [storyId, difficulty]);
+
+  useEffect(() => {
+    const saved = JSON.parse(localStorage.getItem("quizAnswers") || "[]");
+    const current = saved[questionIndex];
+
+    setSelectedIndex(typeof current?.answer === "number" ? current.answer : null);
+    setShowSaved(false);
     setShowAlert(false);
-    setAiExplanation("");
-    setLoadingAi(false);
-  }, [id]);
+  }, [questionIndex]);
 
-  const progressPercent = ((questionIndex + 1) / 5) * 100;
-
-  const getAiExplanation = async () => {
-    setLoadingAi(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 350));
-      setAiExplanation(question?.explanation || "해설을 준비 중이에요.");
-    } finally {
-      setLoadingAi(false);
-    }
-  };
-
-  const handleCheck = async () => {
+  const handleSaveAnswer = () => {
     if (selectedIndex === null) {
       setShowAlert(true);
       return;
     }
 
-    if (showResult || !question) return;
+    if (!question) return;
 
-    const correct = selectedIndex === question.answer;
-    const results = JSON.parse(localStorage.getItem("quizResults") || "[]");
+    const saved = JSON.parse(localStorage.getItem("quizAnswers") || "[]");
 
-    results[questionIndex] = {
-      id: question.id,
-      correct,
-      selectedIndex,
-      answer: question.answer,
-      difficulty,
-      score: correct ? scorePerQuestion : 0,
+    saved[questionIndex] = {
+      questionId: question.id,
+      answer: selectedIndex,
     };
 
-    localStorage.setItem("quizResults", JSON.stringify(results));
-    setShowResult(true);
-    await getAiExplanation();
+    localStorage.setItem("quizAnswers", JSON.stringify(saved));
+    setShowSaved(true);
   };
 
-  const handleNext = () => {
-    if (!showResult) {
+  const handleNext = async () => {
+    if (!showSaved) {
       setShowAlert(true);
       return;
     }
 
     if (questionIndex >= questions.length - 1) {
-      navigate("/quiz/result");
+      try {
+        setSubmitting(true);
+
+        const saved = JSON.parse(localStorage.getItem("quizAnswers") || "[]");
+
+        const res = await fetch(`${BASE_URL}/story_quiz/submit`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: Number(userId),
+            storyId: Number(storyId),
+            answers: saved.map((item) => ({
+              questionId: item.questionId,
+              answer: item.answer,
+            })),
+          }),
+        });
+
+        if (!res.ok) {
+          throw new Error("기본 문제 제출 실패");
+        }
+
+        const submitResult = await res.json();
+        localStorage.setItem("quizSubmitResult", JSON.stringify(submitResult));
+
+        if (submitResult?.nextDifficulty) {
+          localStorage.setItem("extraDifficulty", submitResult.nextDifficulty);
+        }
+
+        navigate("/quiz/explanation");
+      } catch (error) {
+        console.error(error);
+        alert("퀴즈 제출에 실패했어요.");
+      } finally {
+        setSubmitting(false);
+      }
       return;
     }
 
     navigate(`/quiz/${questionIndex + 2}`);
   };
+
+  if (loading) {
+    return (
+      <div className="quiz-page">
+        <div className="quiz-bg">
+          <div className="quiz-bg-cloud cloud-1" />
+          <div className="quiz-bg-cloud cloud-2" />
+          <div className="quiz-bg-cloud cloud-3" />
+          <div className="quiz-bg-hill" />
+        </div>
+
+        <main className="quiz-content">
+          <section className="quiz-shell">
+            <div className="quiz-card empty">
+              <h2>문제를 불러오는 중이에요.</h2>
+            </div>
+          </section>
+        </main>
+      </div>
+    );
+  }
 
   if (!question) {
     return (
@@ -105,7 +182,7 @@ export default function QuizPage() {
           <section className="quiz-shell">
             <div className="quiz-card empty">
               <h2>문제를 불러오지 못했어요.</h2>
-              <p>난이도에 맞는 문제가 준비되어 있는지 확인해주세요.</p>
+              <p>storyId 또는 서버 연결 상태를 확인해주세요.</p>
               <div className="quiz-button-row center">
                 <button
                   className="quiz-button secondary"
@@ -141,7 +218,7 @@ export default function QuizPage() {
 
               <div className="quiz-header-right">
                 <span className="quiz-chip">난이도 {difficulty}</span>
-                <span className="quiz-chip">{scorePerQuestion} EXP</span>
+                <span className="quiz-chip">기본 문제</span>
               </div>
             </div>
 
@@ -161,37 +238,20 @@ export default function QuizPage() {
               </div>
             </div>
 
-            {question.story && (
-              <div className="quiz-story-box">
-                <div className="quiz-story-label">동화 내용 힌트</div>
-                <p>{question.story}</p>
-              </div>
-            )}
-
             <div className="quiz-question-box">
               <p className="quiz-question-label">QUESTION</p>
               <h2>{question.question}</h2>
             </div>
 
             <div className="quiz-option-list">
-              {question.options.map((option, index) => {
+              {question.options?.map((option, index) => {
                 const isSelected = selectedIndex === index;
-                const isAnswer = question.answer === index;
-
-                let stateClass = "";
-                if (showResult) {
-                  if (isAnswer) stateClass = "correct";
-                  else if (isSelected) stateClass = "wrong";
-                } else if (isSelected) {
-                  stateClass = "selected";
-                }
 
                 return (
                   <button
                     key={`${question.id}-${index}`}
-                    className={`quiz-option-button ${stateClass}`}
-                    onClick={() => !showResult && setSelectedIndex(index)}
-                    disabled={showResult}
+                    className={`quiz-option-button ${isSelected ? "selected" : ""}`}
+                    onClick={() => setSelectedIndex(index)}
                   >
                     <span className="quiz-option-index">
                       {String.fromCharCode(65 + index)}
@@ -202,43 +262,32 @@ export default function QuizPage() {
               })}
             </div>
 
-            {showResult && (
-              <div
-                className={`quiz-feedback-box ${
-                  selectedIndex === question.answer ? "success" : "fail"
-                }`}
-              >
-                <div className="quiz-feedback-title">
-                  {selectedIndex === question.answer
-                    ? "정답이에요! 정말 잘했어요 ✨"
-                    : "아쉽지만 오답이에요 😢"}
-                </div>
-
-                {selectedIndex !== question.answer && (
-                  <p className="quiz-feedback-answer">
-                    정답은 <strong>{question.options[question.answer]}</strong> 입니다.
-                  </p>
-                )}
-
+            {showSaved && (
+              <div className="quiz-feedback-box success">
+                <div className="quiz-feedback-title">답안이 저장되었어요 ✨</div>
                 <div className="quiz-ai-box">
-                  <div className="quiz-ai-label">AI 설명</div>
-                  {loadingAi ? (
-                    <p className="quiz-ai-loading">설명을 불러오는 중이에요...</p>
-                  ) : (
-                    <p>{aiExplanation}</p>
-                  )}
+                  <div className="quiz-ai-label">안내</div>
+                  <p>모든 문제를 제출하면 틀린 문제 해설과 결과를 확인할 수 있어요.</p>
                 </div>
               </div>
             )}
 
             <div className="quiz-button-row">
-              {!showResult ? (
-                <button className="quiz-button secondary" onClick={handleCheck}>
-                  정답 확인
+              {!showSaved ? (
+                <button className="quiz-button secondary" onClick={handleSaveAnswer}>
+                  답 저장
                 </button>
               ) : (
-                <button className="quiz-button primary" onClick={handleNext}>
-                  {questionIndex >= questions.length - 1 ? "결과 보기 →" : "다음 문제 →"}
+                <button
+                  className="quiz-button primary"
+                  onClick={handleNext}
+                  disabled={submitting}
+                >
+                  {questionIndex >= questions.length - 1
+                    ? submitting
+                      ? "제출 중..."
+                      : "해설 보기 →"
+                    : "다음 문제 →"}
                 </button>
               )}
             </div>
@@ -249,7 +298,7 @@ export default function QuizPage() {
       {showAlert && (
         <div className="quiz-modal">
           <div className="quiz-modal-card">
-            <p>답을 먼저 선택하거나 정답 확인을 해주세요.</p>
+            <p>답을 먼저 선택하고 저장해주세요.</p>
             <button className="quiz-button primary" onClick={() => setShowAlert(false)}>
               확인
             </button>
