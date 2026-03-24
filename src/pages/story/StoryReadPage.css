@@ -125,10 +125,10 @@
   width: 100%;
   max-width: 520px;
   height: 520px;
-  background: #fff3c8;
+  background: #f8fbff;
   border-radius: 18px;
   overflow: hidden;
-  border: 1px solid #f5e2a6;
+  border: 1px solid #e5eef9;
   display: flex;
   justify-content: center;
   align-items: center;
