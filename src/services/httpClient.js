@@ -25,6 +25,18 @@ function parseResponseBody(response, text) {
   return text;
 }
 
+function handleUnauthorized() {
+  // 토큰 제거
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("userId");
+  
+  // 로그인 페이지로 리다이렉트
+  if (window.location.pathname !== "/login") {
+    window.location.href = "/login";
+  }
+}
+
 export async function request(path, options = {}) {
   const controller = new AbortController();
   const timeoutMs = options.timeoutMs || API_TIMEOUT_MS;
@@ -56,6 +68,11 @@ export async function request(path, options = {}) {
     const data = parseResponseBody(response, rawText);
 
     if (!response.ok) {
+      // 401 Unauthorized 처리
+      if (response.status === 401) {
+        handleUnauthorized();
+      }
+
       const error = new Error(`HTTP ${response.status}`);
       error.status = response.status;
       error.data = data;

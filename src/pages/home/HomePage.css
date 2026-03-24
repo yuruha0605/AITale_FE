@@ -196,14 +196,14 @@ body {
   top: -24px;
 }
 
-/* 언덕 */
 .hill {
   position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  height: 220px;
-  border-radius: 50% 50% 0 0;
+  left: 50%;
+  bottom: -120px; 
+  transform: translateX(-50%);
+  width: 140%;
+  height: 300px;
+  border-radius: 50%;
   background: linear-gradient(180deg, #9cdda0 0%, #7ccb82 100%);
   z-index: 1;
 }

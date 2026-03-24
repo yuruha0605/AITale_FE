@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { signIn, signUp, updateInterests } from "../../services/userService";
 import "./JoinPage.css";
 
 const interestOptions = [
@@ -50,7 +51,7 @@ export default function JoinPage() {
   const [step, setStep] = useState(1);
 
   const [form, setForm] = useState({
-    userId: "",
+    email: "",
     password: "",
     age: "",
   });
@@ -80,10 +81,16 @@ export default function JoinPage() {
   };
 
   const handleNextFromStep1 = () => {
-    if (!form.userId.trim() || !form.password.trim() || !form.age.trim()) {
-      alert("아이디, 비밀번호, 생년월일을 입력해 주세요.");
+    if (!form.email.trim() || !form.password.trim() || !form.age.trim()) {
+      alert("이메일, 비밀번호, 나이를 입력해 주세요.");
       return;
     }
+
+    if (!/^\d+$/.test(form.age.trim())) {
+      alert("나이는 숫자로 입력해 주세요.");
+      return;
+    }
+
     setStep(2);
   };
 
@@ -95,22 +102,46 @@ export default function JoinPage() {
     setStep(3);
   };
 
-  const handleComplete = () => {
-  if (!selectedBook) {
-    alert("읽어보고 싶은 책을 1개 선택해 주세요.");
-    return;
-  }
+  const handleComplete = async () => {
+    if (!selectedBook) {
+      alert("읽어보고 싶은 책을 1개 선택해 주세요.");
+      return;
+    }
 
-  alert("회원가입 완료!");
+    try {
+      await signUp({
+        email: form.email.trim(),
+        password: form.password,
+        age: Number(form.age),
+      });
 
-  console.log("회원가입 데이터", {
-    ...form,
-    interests: selectedInterests,
-    book: selectedBook,
-  });
+      await signIn({
+        email: form.email.trim(),
+        password: form.password,
+      });
 
-  navigate("/sign");
-};
+      // 현재 FE 관심사 풀 순서 기준으로 1..N 매핑해서 저장
+      const interestsAsIds = selectedInterests.map(
+        (interest) => interestOptions.indexOf(interest) + 1
+      );
+      await updateInterests(interestsAsIds);
+
+      localStorage.setItem("favoriteBookId", String(selectedBook.id));
+
+      alert("회원가입 완료!");
+
+      console.log("회원가입 데이터", {
+        ...form,
+        interests: selectedInterests,
+        book: selectedBook,
+      });
+
+      navigate("/test/intro");
+    } catch (error) {
+      console.error("회원가입 실패", error);
+      alert("회원가입에 실패했습니다. 입력 정보를 확인해 주세요.");
+    }
+  };
 
   return (
     <div className="join-page">
@@ -153,9 +184,9 @@ export default function JoinPage() {
               <div className="input-group">
                 <input
                   type="text"
-                  name="userId"
-                  placeholder="아이디"
-                  value={form.userId}
+                  name="email"
+                  placeholder="이메일"
+                  value={form.email}
                   onChange={handleChange}
                 />
               </div>
